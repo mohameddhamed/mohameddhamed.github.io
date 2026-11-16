@@ -21,7 +21,7 @@
     { type: "output", text: "[2.00s] [RUN ] Re-running 10,000 concurrent Virtual Threads with unpinned carriers...", cls: "t-fg", pause: 280 },
     { type: "output", text: "[2.30s] [OK  ] 0 carrier threads pinned. Non-blocking unpark on epoll readiness active.", cls: "t-ok", pause: 220 },
     { type: "output", text: "[2.60s] [OK  ] Throughput: 48,210 req/s (+261x) | P99: 1.82 ms | Heap: 34.2 MB", cls: "t-ok", pause: 300 },
-    { type: "output", text: "[2.80s] [RESULT] Benchmark completed. Pinned P99=1420ms -> Unpinned P99=1.82ms (780x latency drop).", cls: "t-accent", pause: 8000 }
+    { type: "output", text: "[2.80s] [RESULT] Benchmark completed. Pinned P99=1420ms -> Unpinned P99=1.82ms (780x latency drop).", cls: "t-accent", pause: 500 }
   ];
 
   let currentAbortController = null;
@@ -41,43 +41,63 @@
     for (let i = 0; i < text.length; i++) {
       if (signal.aborted) return;
       targetSpan.textContent += text[i];
+      terminalElement.scrollTop = terminalElement.scrollHeight;
       await cancellableSleep(speed, signal);
     }
   }
 
+  function appendFinalPrompt() {
+    const finalPrompt = document.createElement("div");
+    finalPrompt.className = "term-line";
+    const promptSpan = document.createElement("span");
+    promptSpan.className = "t-prompt";
+    promptSpan.textContent = "mohamed@node-01:~$ ";
+    finalPrompt.appendChild(promptSpan);
+
+    const cursor = document.createElement("span");
+    cursor.className = "term-cursor";
+    finalPrompt.appendChild(cursor);
+
+    terminalElement.appendChild(finalPrompt);
+    terminalElement.scrollTop = terminalElement.scrollHeight;
+  }
+
   async function runSession(signal) {
     try {
-      while (!signal.aborted) {
-        terminalElement.innerHTML = "";
-        for (const step of script) {
-          if (signal.aborted) return;
+      terminalElement.innerHTML = "";
+      for (const step of script) {
+        if (signal.aborted) return;
 
-          const line = document.createElement("div");
-          line.className = "term-line " + (step.cls || "");
+        const line = document.createElement("div");
+        line.className = "term-line " + (step.cls || "");
 
-          if (step.type === "input") {
-            const promptSpan = document.createElement("span");
-            promptSpan.className = "t-prompt";
-            promptSpan.textContent = step.prompt;
-            line.appendChild(promptSpan);
+        if (step.type === "input") {
+          const promptSpan = document.createElement("span");
+          promptSpan.className = "t-prompt";
+          promptSpan.textContent = step.prompt;
+          line.appendChild(promptSpan);
 
-            const cmdSpan = document.createElement("span");
-            line.appendChild(cmdSpan);
+          const cmdSpan = document.createElement("span");
+          line.appendChild(cmdSpan);
 
-            const cursor = document.createElement("span");
-            cursor.className = "term-cursor";
-            line.appendChild(cursor);
+          const cursor = document.createElement("span");
+          cursor.className = "term-cursor";
+          line.appendChild(cursor);
 
-            terminalElement.appendChild(line);
-            await typeWriter(step.text, cmdSpan, step.delay, signal);
-            cursor.remove();
-          } else {
-            line.textContent = step.text;
-            terminalElement.appendChild(line);
-            await cancellableSleep(step.pause || 200, signal);
-          }
+          terminalElement.appendChild(line);
+          terminalElement.scrollTop = terminalElement.scrollHeight;
+          await typeWriter(step.text, cmdSpan, step.delay, signal);
+          cursor.remove();
+        } else {
+          line.textContent = step.text;
+          terminalElement.appendChild(line);
+          terminalElement.scrollTop = terminalElement.scrollHeight;
+          await cancellableSleep(step.pause || 200, signal);
         }
       }
+
+      if (signal.aborted) return;
+      appendFinalPrompt();
     } catch (err) {
       if (err.name !== "AbortError") console.error(err);
     }
@@ -102,6 +122,7 @@
       }
       terminalElement.appendChild(line);
     });
+    appendFinalPrompt();
   }
 
   function start() {
@@ -126,6 +147,8 @@
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (motionQuery.addEventListener) {
     motionQuery.addEventListener("change", () => start());
+  } else if (motionQuery.addListener) {
+    motionQuery.addListener(() => start());
   }
 
   start();

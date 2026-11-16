@@ -6,6 +6,14 @@
   <title>The Virtual Thread Concurrency Fallacy — *mohamed.sys</title>
   <meta name="description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
   <meta name="author" content="Mohamed Hamed">
+  <meta property="og:title" content="The Virtual Thread Concurrency Fallacy — *mohamed.sys">
+  <meta property="og:description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="The Virtual Thread Concurrency Fallacy — *mohamed.sys">
+  <meta name="twitter:description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
+  <link rel="canonical" href="https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -49,7 +57,7 @@
     </article>
 
     <div class="systems-callout">
-      <strong>Core Thesis:</strong> Upgrading to Java 21 and flipping <code>spring.threads.virtual.enabled=true</code> does not provide free scalability for legacy enterprise codebases. Under high concurrency ($>10,000$ active requests), unmonitored synchronization around blocking network or database I/O pins JVM carrier threads, reducing throughput by up to <strong>99.6%</strong> and causing complete thread pool starvation.
+      <strong>Core Thesis:</strong> Upgrading to Java 21 and flipping <code>spring.threads.virtual.enabled=true</code> does not provide free scalability for legacy enterprise codebases. Under high concurrency (&gt;10,000 active requests), unmonitored synchronization around blocking network or database I/O pins JVM carrier threads, reducing throughput by up to <strong>99.6%</strong> and causing complete thread pool starvation.
     </div>
 
     <section class="article-body">
@@ -114,7 +122,7 @@ jdk.VirtualThreadPinned {
 
       <h2>4. The HikariCP Connection Pool Deadlock</h2>
       <p>
-        A related failure pattern involves database connection sizing. In traditional platform thread configurations, thread count (e.g. 200) naturally bounds the contention for the database pool ($M_{\text{pool}} = 20$).
+        A related failure pattern involves database connection sizing. In traditional platform thread configurations, thread count (e.g. 200) naturally bounds the contention for the database pool (<code>M<sub>pool</sub> = 20</code>).
       </p>
       <p>
         With Virtual Threads, applications freely spawn 10,000 concurrent fibers. When 10,000 threads simultaneously invoke <code>dataSource.getConnection()</code>, the connection pool becomes saturated in microseconds. If connection acquisition logic utilizes synchronized synchronization blocks, all carrier threads become pinned waiting for connections that cannot be released because the releasing threads are queued behind starved carriers.
@@ -211,6 +219,8 @@ public byte[] readFromSocket() {
       <a href="../feed.xml">RSS</a>
       <a href="../thesis/research-dashboard.html">Telemetry Dashboard</a>
       <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mohamedus.1970.hm@gmail.com">Email</a>
     </div>
   </footer>
 

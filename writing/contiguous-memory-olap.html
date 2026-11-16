@@ -6,6 +6,14 @@
   <title>Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys</title>
   <meta name="description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
   <meta name="author" content="Mohamed Hamed">
+  <meta property="og:title" content="Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys">
+  <meta property="og:description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mohameddhamed.github.io/writing/contiguous-memory-olap.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys">
+  <meta name="twitter:description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
+  <link rel="canonical" href="https://mohameddhamed.github.io/writing/contiguous-memory-olap.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -162,7 +170,7 @@ Column Vector (Surrogate IDs):
         In typical OLAP engines, evaluating <code>GROUP BY category</code> allocates a <code>HashMap&lt;Key, Accumulator&gt;</code>. Under high throughput, hash computation, bucket collisions, and cache-line misses during bucket lookups dominate execution time.
       </p>
       <p>
-        Because our dictionary encoding provides dense surrogate IDs $S \in [0, N-1]$ where $N$ is the dictionary cardinality, we eliminate the hash table completely. Aggregation allocates a simple flat array indexed directly by surrogate ID:
+        Because our dictionary encoding provides dense surrogate IDs <code>S &isin; [0, N&minus;1]</code> where <code>N</code> is the dictionary cardinality, we eliminate the hash table completely. Aggregation allocates a simple flat array indexed directly by surrogate ID:
       </p>
 
       <div class="code-block">
@@ -237,8 +245,9 @@ pub fn aggregate_sum_direct(surrogates: &amp;[u32], values: &amp;[i64], acc: &am
     <div class="footer-links">
       <a href="../key.pub">SSH Key</a>
       <a href="../feed.xml">RSS</a>
-      <a href="https://github.com/mohameddhamed/mini-columnar-engine" target="_blank" rel="noopener">GitHub</a>
-      <a href="../assets/pdf/resume-mohamed-hamed.pdf" target="_blank">Resume PDF</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mohamedus.1970.hm@gmail.com">Email</a>
     </div>
   </footer>
 

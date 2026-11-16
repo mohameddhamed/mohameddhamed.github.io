@@ -6,6 +6,14 @@
   <title>CRDT Selective Undo via Vector Inversion — *mohamed.sys</title>
   <meta name="description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
   <meta name="author" content="Mohamed Hamed">
+  <meta property="og:title" content="CRDT Selective Undo via Vector Inversion — *mohamed.sys">
+  <meta property="og:description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mohameddhamed.github.io/writing/crdt-selective-undo.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="CRDT Selective Undo via Vector Inversion — *mohamed.sys">
+  <meta name="twitter:description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
+  <link rel="canonical" href="https://mohameddhamed.github.io/writing/crdt-selective-undo.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -64,10 +72,10 @@ Inverse: Insert the deleted 5 characters at offset 14.</div>
         Consider two concurrent collaborators, Alice (Client 1) and Bob (Client 2), operating on a shared document with initial text <code>"The brown fox"</code>:
       </p>
       <ol>
-        <li>At $t_1$, Alice types <code>"quick "</code> at index 4 &rarr; <code>"The quick brown fox"</code>.</li>
-        <li>At $t_2$, before receiving Alice's update, Bob types <code>"lazy "</code> at index 10 &rarr; intended to precede <code>"fox"</code>.</li>
+        <li>At <em>t</em><sub>1</sub>, Alice types <code>"quick "</code> at index 4 &rarr; <code>"The quick brown fox"</code>.</li>
+        <li>At <em>t</em><sub>2</sub>, before receiving Alice's update, Bob types <code>"lazy "</code> at index 10 &rarr; intended to precede <code>"fox"</code>.</li>
         <li>Both peers synchronize over WebSockets and converge cleanly via CRDT ordering.</li>
-        <li>At $t_3$, Alice presses <code>Ctrl+Z</code>.</li>
+        <li>At <em>t</em><sub>3</sub>, Alice presses <code>Ctrl+Z</code>.</li>
       </ol>
       <p>
         If Alice's client simply deletes 6 characters starting at absolute index 4, but Bob's concurrent insertions shifted the document structure, Alice's naive undo either deletes Bob's keystrokes or splices characters at an invalid offset.
@@ -141,8 +149,9 @@ Inverse: Insert the deleted 5 characters at offset 14.</div>
     <div class="footer-links">
       <a href="../key.pub">SSH Key</a>
       <a href="../feed.xml">RSS</a>
-      <a href="https://github.com/mohameddhamed/parallel-crdt" target="_blank" rel="noopener">GitHub</a>
-      <a href="../assets/pdf/resume-mohamed-hamed.pdf" target="_blank">Resume PDF</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mohamedus.1970.hm@gmail.com">Email</a>
     </div>
   </footer>
 

@@ -6,6 +6,14 @@
   <title>M.Sc. Dissertation &amp; Loom Research — *mohamed.sys</title>
   <meta name="description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
   <meta name="author" content="Mohamed Hamed">
+  <meta property="og:title" content="M.Sc. Dissertation &amp; Loom Research — *mohamed.sys">
+  <meta property="og:description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mohameddhamed.github.io/thesis/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="M.Sc. Dissertation &amp; Loom Research — *mohamed.sys">
+  <meta name="twitter:description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <link rel="canonical" href="https://mohameddhamed.github.io/thesis/">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -58,7 +66,7 @@
     <section class="article-body">
       <h2>1. The Core Architectural Problem</h2>
       <p>
-        Java Virtual Threads decouple logical application tasks from Operating System kernel threads. While platform threads incur ~1MB native stack memory footprints, virtual threads operate as user-mode continuations managed cooperatively by a small <code>ForkJoinPool</code> carrier pool (typically matching the physical core count $N_{\text{CPU}}$).
+        Java Virtual Threads decouple logical application tasks from Operating System kernel threads. While platform threads incur ~1MB native stack memory footprints, virtual threads operate as user-mode continuations managed cooperatively by a small <code>ForkJoinPool</code> carrier pool (typically matching the physical core count <code>N<sub>CPU</sub></code>).
       </p>
       <p>
         However, the JVM runtime cannot unmount a virtual thread when blocking I/O occurs within a <code>synchronized</code> block or across a native JNI/FFM boundary (JFR event: <code>jdk.VirtualThreadPinned</code>). When legacy JDBC drivers or enterprise connection pools synchronize around socket read/write calls under heavy load, all carrier threads become pinned simultaneously. At this saturation threshold, the entire thread pool deadlocks, yielding extreme throughput collapse and multi-second latency degradation.
@@ -171,6 +179,7 @@
       <a href="../feed.xml">RSS</a>
       <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
       <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mohamedus.1970.hm@gmail.com">Email</a>
     </div>
   </footer>
 

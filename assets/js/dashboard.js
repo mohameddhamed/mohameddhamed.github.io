@@ -43,9 +43,8 @@
   function renderChart() {
     const data = dataset[activeWorkload];
     const values = data[activeMetric];
-    const maxVal = Math.max(...values) * 1.15 || 1;
-    const isP99 = activeMetric === "p99";
-    const isBadMetric = activeMetric === "pinnedEvents" || isP99;
+    const rawMax = Math.max(...values);
+    const maxVal = rawMax === 0 ? 4 : rawMax * 1.15;
 
     const width = 760;
     const height = 300;
@@ -58,7 +57,8 @@
 
     let barsSvg = "";
     values.forEach((val, idx) => {
-      const h = (val / maxVal) * chartH;
+      const rawH = (val / maxVal) * chartH;
+      const h = val === 0 ? 2 : rawH;
       const x = padding.left + (idx * gap) + (gap - barWidth) / 2;
       const y = padding.top + chartH - h;
 
@@ -74,7 +74,7 @@
       const formattedVal = val.toLocaleString() + " " + data.units[activeMetric];
 
       barsSvg += `
-        <g class="chart-bar-group" tabindex="0">
+        <g class="chart-bar-group" tabindex="0" role="graphics-symbol" aria-label="${data.categories[idx]}: ${formattedVal}">
           <rect x="${x}" y="${y}" width="${barWidth}" height="${h}" fill="${color}" rx="3" opacity="0.9">
             <title>${data.categories[idx]}: ${formattedVal}</title>
           </rect>
@@ -96,10 +96,13 @@
     for (let i = 0; i <= gridSteps; i++) {
       const stepVal = (maxVal / gridSteps) * i;
       const y = padding.top + chartH - (i * (chartH / gridSteps));
+      const tickLabel = rawMax === 0
+        ? String(i)
+        : (maxVal < 10 ? stepVal.toFixed(1) : Math.round(stepVal).toLocaleString());
       gridLinesSvg += `
         <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#23272e" stroke-dasharray="3,3"/>
         <text x="${padding.left - 10}" y="${y + 4}" fill="#8a9099" font-family="var(--font-mono)" font-size="10" text-anchor="end">
-          ${Math.round(stepVal).toLocaleString()}
+          ${tickLabel}
         </text>
       `;
     }
@@ -109,7 +112,7 @@
         <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--fg-bright);">${data.title}</div>
         <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">${data.description}</div>
       </div>
-      <svg viewBox="0 0 ${width} ${height}" class="chart-svg" style="background: var(--term-bg); border: 1px solid var(--border); border-radius: 6px;">
+      <svg role="img" aria-label="${data.title}" viewBox="0 0 ${width} ${height}" class="chart-svg" style="background: var(--term-bg); border: 1px solid var(--border); border-radius: 6px;">
         ${gridLinesSvg}
         <!-- X and Y Axes -->
         <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + chartH}" stroke="#23272e" stroke-width="1"/>
