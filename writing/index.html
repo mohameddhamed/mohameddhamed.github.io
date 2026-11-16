@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Systems Writing &amp; Research — *mohamed.sys</title>
+  <meta name="description" content="Technical monographs, systems architecture deep-dives, and concurrency research papers by Mohamed Hamed.">
+  <meta name="author" content="Mohamed Hamed">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <!-- Monospace Identity Header -->
+  <header class="sys-header">
+    <div class="sys-title">
+      <span class="star-accent">★</span> *mohamed.sys
+    </div>
+    <div class="sys-subtitle">
+      Systems Engineering Writing • Concurrency, Databases &amp; Low-Level Runtimes
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="sys-nav-links" aria-label="Breadcrumb Navigation">
+      <a href="../" class="term-link"><span class="bracket">[</span>&larr; root<span class="bracket">]</span></a>
+      <a href="./" class="term-link active"><span class="bracket">[</span>writing-index<span class="bracket">]</span></a>
+      <a href="../thesis/" class="term-link"><span class="bracket">[</span>thesis<span class="bracket">]</span></a>
+      <a href="../feed.xml" class="term-link"><span class="bracket">[</span>rss-feed<span class="bracket">]</span></a>
+      <a href="../assets/pdf/resume-mohamed-hamed.pdf" target="_blank" class="term-link"><span class="bracket">[</span>resume.pdf<span class="bracket">]</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="article-header">
+      <h1 class="article-title">Systems Engineering Monographs</h1>
+      <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">
+        Rigorous architectural post-mortems, benchmark telemetry, and systems implementation analysis.
+      </p>
+    </article>
+
+    <div style="display: flex; flex-direction: column; gap: 24px; margin: 32px 0;">
+
+      <!-- Article 1: Virtual Thread Fallacy -->
+      <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
+          CONCURRENCY &amp; RUNTIMES • NOVEMBER 2026 • 16 MIN READ
+        </div>
+        <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+          <a href="virtual-thread-fallacy.html" style="text-decoration: none; color: var(--fg-bright);">
+            The Virtual Thread Concurrency Fallacy: Carrier Starvation and JDBC Pinning in High-Throughput Java 21 Runtimes
+          </a>
+        </h2>
+        <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
+          Why blindly enabling <code>spring.threads.virtual.enabled=true</code> in enterprise microservices causes sudden carrier thread starvation. A deep dive into JFR Flight Recorder telemetry, <code>ForkJoinPool</code> work-stealing limitations, and eliminating JDBC synchronized monitor pinning.
+        </p>
+        <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
+          <a href="virtual-thread-fallacy.html">Read Full Monograph ›</a>
+          <a href="../thesis/research-dashboard.html" style="color: var(--muted);">View Telemetry Charts ›</a>
+        </div>
+      </article>
+
+      <!-- Article 2: Contiguous Memory OLAP -->
+      <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
+          DATABASE INTERNALS • NOVEMBER 2026 • 14 MIN READ
+        </div>
+        <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+          <a href="contiguous-memory-olap.html" style="text-decoration: none; color: var(--fg-bright);">
+            Contiguous Memory Layouts and SIMD Selection Vectors in Vectorized OLAP Engines
+          </a>
+        </h2>
+        <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
+          Dissecting the mechanical internals of SAP HANA TableStore: implementing contiguous memory arrays, bit-packed null masks (0.125 bytes/row), dictionary surrogate encoding, and morsel-driven SIMD filtering in Rust to achieve 3.96 billion elements per second scan throughput.
+        </p>
+        <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
+          <a href="contiguous-memory-olap.html">Read Full Monograph ›</a>
+          <a href="https://github.com/mohameddhamed/mini-columnar-engine" target="_blank" rel="noopener" style="color: var(--muted);">Inspect Code on GitHub ›</a>
+        </div>
+      </article>
+
+      <!-- Article 3: CRDT Selective Undo -->
+      <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
+          DISTRIBUTED SYSTEMS • NOVEMBER 2026 • 12 MIN READ
+        </div>
+        <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+          <a href="crdt-selective-undo.html" style="text-decoration: none; color: var(--fg-bright);">
+            Selective Undo via Vector Clock Inversion in Conflict-Free Replicated Data Types (CRDTs)
+          </a>
+        </h2>
+        <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
+          How to achieve local undo in peer-to-peer collaborative editing without reverting remote collaborators' operations. A formal breakdown of Yjs binary state vectors, relative positions, and causal tree inversion.
+        </p>
+        <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
+          <a href="crdt-selective-undo.html">Read Full Monograph ›</a>
+          <a href="https://github.com/mohameddhamed/parallel-crdt" target="_blank" rel="noopener" style="color: var(--muted);">Inspect Code on GitHub ›</a>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Systems Footer -->
+  <footer class="sys-footer">
+    <div>
+      <span>*mohamed.sys &copy; 2026 Mohamed Hamed</span>
+      <span style="margin: 0 8px; color: var(--border);">|</span>
+      <span>Semantic RSS Feed Available</span>
+    </div>
+    <div class="footer-links">
+      <a href="../key.pub">SSH Key</a>
+      <a href="../feed.xml">RSS</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+</body>
+</html>

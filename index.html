@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>*mohamed.sys — Systems &amp; Concurrency Engineering Portal</title>
+  <meta name="description" content="Personal systems engineering research portal for Mohamed Hamed. Core platform engineering at SAP HANA, JVM concurrency research (Project Loom), in-memory databases, and low-latency systems.">
+  <meta name="author" content="Mohamed Hamed">
+  <meta property="og:title" content="*mohamed.sys — Mohamed Hamed">
+  <meta property="og:description" content="Senior Java &amp; Systems Concurrency Engineer. Platform &amp; HANA Ecosystem at SAP. M.Sc. Software Architecture at ELTE.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mohameddhamed.github.io/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="feed.xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Monospace Identity Header -->
+  <header class="sys-header" id="about">
+    <h1 class="sys-title">
+      <span class="star-accent">★</span> *mohamed.sys
+    </h1>
+    <div class="sys-subtitle">
+      <span class="hl">Mohamed Hamed</span> — Senior Java &amp; Systems Concurrency Engineer<br>
+      Software Engineer @ <span class="hl">SAP</span> (Platform &amp; HANA Ecosystem) • M.Sc. Software Architecture @ <span class="hl">ELTE</span> (Budapest)
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="sys-nav-links" aria-label="Primary Navigation">
+      <a href="#about" class="term-link active"><span class="bracket">[</span>about<span class="bracket">]</span></a>
+      <a href="#terminal" class="term-link"><span class="bracket">[</span>terminal<span class="bracket">]</span></a>
+      <a href="#milestones" class="term-link"><span class="bracket">[</span>milestones<span class="bracket">]</span></a>
+      <a href="#systems" class="term-link"><span class="bracket">[</span>systems<span class="bracket">]</span></a>
+      <a href="thesis/" class="term-link"><span class="bracket">[</span>thesis<span class="bracket">]</span></a>
+      <a href="thesis/research-dashboard.html" class="term-link"><span class="bracket">[</span>telemetry<span class="bracket">]</span></a>
+      <a href="writing/" class="term-link"><span class="bracket">[</span>writing<span class="bracket">]</span></a>
+      <a href="assets/pdf/resume-mohamed-hamed.pdf" target="_blank" class="term-link"><span class="bracket">[</span>resume.pdf<span class="bracket">]</span></a>
+      <a href="key.pub" class="term-link"><span class="bracket">[</span>ssh-key<span class="bracket">]</span></a>
+    </nav>
+  </header>
+
+  <!-- Systems Callout / Philosophy -->
+  <aside class="systems-callout">
+    <strong>Engineering Axiom:</strong> Mechanical sympathy over abstraction layers. I engineer high-throughput platform-level services at <strong>SAP</strong> within the HANA database ecosystem, conduct empirical research on JVM concurrency and carrier starvation under <strong>Project Loom</strong>, and architect zero-allocation engines across <strong>Rust</strong>, <strong>C++20</strong>, and <strong>Go</strong>.
+  </aside>
+
+  <!-- Terminal Component Window -->
+  <section id="terminal" aria-label="Interactive Telemetry Terminal">
+    <div class="term-window">
+      <div class="term-header">
+        <div class="term-traffic-lights" aria-hidden="true">
+          <span class="traffic-dot traffic-red"></span>
+          <span class="traffic-dot traffic-yellow"></span>
+          <span class="traffic-dot traffic-green"></span>
+        </div>
+        <div class="term-title">mohamed@node-01: ~/benchmarks/loom-pinning (Java 21 LTS)</div>
+        <button id="terminal-replay-btn" class="term-btn" title="Replay terminal simulation">[replay]</button>
+      </div>
+      <div id="terminal-content" class="term-body" aria-live="polite">
+        <!-- Managed dynamically by terminal.js -->
+        <noscript>
+          <div class="term-line t-prompt">mohamed@node-01:~$ ./benchmark-loom --workload=http-io --concurrency=10000 --carrier-threads=8</div>
+          <div class="term-line t-muted">[0.00s] [INFO] Initializing ForkJoinPool carrier pool (parallelism=8, Java 21 LTS)</div>
+          <div class="term-line t-bad">[0.70s] [WARN] JFR Event: jdk.VirtualThreadPinned duration=42.1ms carrier=ForkJoinPool-1-worker-3</div>
+          <div class="term-line t-bad">[1.10s] [WARN] Carrier pool saturation: 8/8 carriers pinned. Throughput: 184 req/s | P99: 1,420 ms</div>
+          <div class="term-line t-prompt">mohamed@node-01:~$ ./patch-runtime --replace-synchronized-with-reentrant-locks</div>
+          <div class="term-line t-ok">[2.30s] [OK  ] 0 carrier threads pinned. Non-blocking unpark active.</div>
+          <div class="term-line t-ok">[2.60s] [OK  ] Throughput: 48,210 req/s (+261x) | P99: 1.82 ms | Heap: 34.2 MB</div>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- Milestone Timeline Rail -->
+  <section id="milestones">
+    <h2 class="section-heading"><span class="sym">§</span> Engineering Milestones &amp; Trajectory</h2>
+    <div class="milestone-rail">
+      
+      <!-- SAP -->
+      <article class="milestone-item">
+        <div class="milestone-meta">
+          <span>08/2025 — PRESENT</span>
+          <span>•</span>
+          <span>BUDAPEST, HUNGARY</span>
+        </div>
+        <div class="milestone-role">Software Engineer — <span class="milestone-company">SAP</span></div>
+        <div class="milestone-desc">
+          Core Platform Services &amp; SAP HANA Ecosystem:
+        </div>
+        <ul class="milestone-bullets">
+          <li>Engineer platform-level services within the SAP HANA ecosystem, contributing to scalable backend functionality in mission-critical database environments.</li>
+          <li>Modernize enterprise business logic from legacy systems into clean Java services utilizing SAP CAP and Spring Boot with Domain-Driven Design (DDD).</li>
+          <li>Design automated API validation pipelines, contractual integration suites, and optimize relational data access patterns.</li>
+          <li>Own service-level reliability (SRE), driving deep debugging of production concurrency anomalies and high-throughput query bottlenecks.</li>
+        </ul>
+      </article>
+
+      <!-- ExxonMobil -->
+      <article class="milestone-item">
+        <div class="milestone-meta">
+          <span>06/2023 — 07/2025</span>
+          <span>•</span>
+          <span>BUDAPEST, HUNGARY</span>
+        </div>
+        <div class="milestone-role">Backend &amp; Software Engineer — <span class="milestone-company">ExxonMobil</span></div>
+        <div class="milestone-desc">
+          Enterprise Distributed Systems &amp; Asynchronous Workflows:
+        </div>
+        <ul class="milestone-bullets">
+          <li>Architected high-latency asynchronous processing workflows for an AI-assisted document intelligence platform, utilizing polling-based state machines and resilient status tracking.</li>
+          <li>Built high-throughput RESTful endpoints using Spring MVC to intake complex document payloads, integrating Spring Security for fine-grained role-based access control (RBAC).</li>
+          <li>Migrated mission-critical vulnerability management platform services to .NET Core and MSSQL, optimizing database schemas and indexing to reduce query latencies.</li>
+          <li>Developed full-stack configuration and automation tooling using TypeScript, Next.js, and Node.js with CI/CD automation pipelines across MongoDB and relational databases.</li>
+        </ul>
+      </article>
+
+      <!-- Teaching Assistant -->
+      <article class="milestone-item">
+        <div class="milestone-meta">
+          <span>02/2025 — 06/2025</span>
+          <span>•</span>
+          <span>BUDAPEST, HUNGARY</span>
+        </div>
+        <div class="milestone-role">Teaching Assistant — <span class="milestone-company">Eötvös Loránd University (ELTE)</span></div>
+        <div class="milestone-desc">
+          Telecommunications &amp; Low-Level Network Protocol Design:
+        </div>
+        <ul class="milestone-bullets">
+          <li>Instructed lab courses covering low-level network protocol design, socket programming (TCP/UDP), multiplexing, and framing using Rust.</li>
+          <li>Mentored computer science students on memory safety, ownership semantics, zero-copy packet processing, and concurrent server architectures.</li>
+        </ul>
+      </article>
+
+      <!-- M.Sc. Degree -->
+      <article class="milestone-item">
+        <div class="milestone-meta">
+          <span>09/2025 — 01/2027</span>
+          <span>•</span>
+          <span>BUDAPEST, HUNGARY</span>
+        </div>
+        <div class="milestone-role">Master of Science in Computer Science — <span class="milestone-company">ELTE</span></div>
+        <div class="milestone-desc">
+          Specialization: <em>Software Architecture &amp; Distributed Systems</em>
+        </div>
+        <ul class="milestone-bullets">
+          <li><strong>Master's Thesis Research:</strong> <em>Java Virtual Threads in Spring Boot Applications</em> — empirical evaluation across 125 reproducible benchmark runs measuring throughput, carrier thread starvation, JDBC monitor pinning, and OS vs. user-mode thread concurrency.</li>
+        </ul>
+      </article>
+
+      <!-- B.Sc. Degree -->
+      <article class="milestone-item">
+        <div class="milestone-meta">
+          <span>09/2022 — 06/2025</span>
+          <span>•</span>
+          <span>BUDAPEST, HUNGARY</span>
+        </div>
+        <div class="milestone-role">Bachelor of Science in Computer Science — <span class="milestone-company">ELTE</span></div>
+        <div class="milestone-desc">
+          Thesis: <em>Parallel Code</em> — peer-to-peer collaborative code editing extension for VS Code using Conflict-Free Replicated Data Types (CRDTs).
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Flagship Systems Showcase -->
+  <section id="systems">
+    <h2 class="section-heading"><span class="sym">§</span> Flagship Systems Implementations</h2>
+    
+    <div class="project-grid">
+
+      <!-- 1. mini-columnar-engine -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/mini-columnar-engine" target="_blank" rel="noopener">mini-columnar-engine</a>
+          </h3>
+          <span class="project-badge lang-rust">Rust • Vectorized OLAP</span>
+        </div>
+        <div class="project-tagline">In-Memory Columnar Database Engine Mirroring SAP HANA TableStore</div>
+        <div class="project-desc">
+          Vectorized OLAP execution engine engineered from first principles in Rust. Features contiguous memory layout arrays, bit-packed null bitmasks (0.125 bytes/row), dictionary surrogate encoding, morsel-driven chunked execution (1024-row batches), and direct-indexed array aggregation bypassing hash tables.
+        </div>
+        <div class="project-ascii-arch">
+[Raw Stream] ──&gt; [Dictionary Encoder] ──&gt; [Chunk Splitter (1024 rows)]
+                       │                         │
+                       ▼                         ▼
+             [Bit-Packed Null Mask]    [SIMD Vectorized Filter]
+                       │                         │
+                       └───────────────┬─────────┘
+                                       ▼
+                       [Direct-Indexed Aggregator] ──&gt; 3.96B elem/s Scan</div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Scan Throughput</div>
+            <div class="metric-val">3.96 Billion elem/s</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Group-By Speedup</div>
+            <div class="metric-val">29.5x vs. HashMap</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Null Overhead</div>
+            <div class="metric-val">1 bit per element</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/mini-columnar-engine" target="_blank" rel="noopener">GitHub Repository ›</a>
+          <a href="writing/contiguous-memory-olap.html">Technical Deep-Dive ›</a>
+        </div>
+      </article>
+
+      <!-- 2. aetherkv -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/aetherkv" target="_blank" rel="noopener">aetherkv</a>
+          </h3>
+          <span class="project-badge lang-rust">Rust • io_uring • AVX2</span>
+        </div>
+        <div class="project-tagline">High-Throughput Asynchronous LSM Storage Engine for NVMe Drives</div>
+        <div class="project-desc">
+          Asynchronous Log-Structured Merge (LSM) key-value engine. Eliminates allocator contention with a generational monotonic bump arena and lock-free SkipList MemTable. Uses pre-allocated log segments with Linux <code>io_uring</code> Direct I/O (<code>O_DIRECT</code>) to bypass page cache pollution and inode serialization, with AVX2 block-split Bloom filters for sub-microsecond rejection.
+        </div>
+        <div class="project-ascii-arch">
+[Write IOPS] ──&gt; [Lock-Free MemTable Arena] ──&gt; [io_uring Direct I/O WAL]
+                           │ (Flush)
+                           ▼
+                 [Level-0 SSTable (4KB)] ──&gt; [AVX2 Bloom Filter (8 probes)]
+                           │ (Compaction)
+                           ▼
+                 [Leveled LSM Pyramid] ────&gt; P99: 35µs @ 1.42M IOPS</div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Peak IOPS</div>
+            <div class="metric-val">1,420,000 IOPS</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">P99 Read Latency</div>
+            <div class="metric-val">35 µs</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Bloom Reject</div>
+            <div class="metric-val">Sub-Microsecond</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/aetherkv" target="_blank" rel="noopener">GitHub Repository ›</a>
+        </div>
+      </article>
+
+      <!-- 3. nexusloop -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/nexusloop" target="_blank" rel="noopener">nexusloop</a>
+          </h3>
+          <span class="project-badge lang-cpp">C++20 • SIMD • Low-Latency</span>
+        </div>
+        <div class="project-tagline">Deterministic Zero-Allocation Quantitative Trading Gateway</div>
+        <div class="project-desc">
+          Deterministic market data gateway and execution engine. Implements lock-free Disruptor ring buffers with 64-byte cache-line isolation, preventing false sharing across CPU cores. Features a custom 2MB huge-page arena allocator with an <code>AllocationGuard</code> trap asserting zero heap allocations on the hot path, and AVX2 vector shuffle parsing of NASDAQ ITCH 5.0 feeds.
+        </div>
+        <div class="project-ascii-arch">
+[ITCH 5.0 Feed] ──&gt; [AVX2 Vector Shuffle] ──&gt; [64-Byte Padded Disruptor Ring]
+                           │                               │
+                           ▼                               ▼
+                 [0.92 ns/msg Parser]            [62.5 ns SPSC Handoff]
+                           │                               │
+                           └───────────────┬───────────────┘
+                                           ▼
+                                 [AllocationGuard: 0 Bytes Heap]</div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">ITCH Parse Speed</div>
+            <div class="metric-val">0.92 ns / msg</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Ring Handoff</div>
+            <div class="metric-val">62.5 ns</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Hot-Path Alloc</div>
+            <div class="metric-val">0 Bytes (Strict)</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/nexusloop" target="_blank" rel="noopener">GitHub Repository ›</a>
+        </div>
+      </article>
+
+      <!-- 4. virtual-thread-springs -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/virtual-thread-springs" target="_blank" rel="noopener">virtual-thread-springs</a>
+          </h3>
+          <span class="project-badge lang-java">Java 21 • Project Loom</span>
+        </div>
+        <div class="project-tagline">JVM Concurrency, Carrier Starvation &amp; Monitor Pinning Framework</div>
+        <div class="project-desc">
+          M.Sc. research application and empirical benchmarking framework evaluating Project Loom under high-load MVC request patterns. Diagnoses carrier thread starvation and monitor pinning inside legacy <code>synchronized</code> blocks during blocking socket operations, demonstrating remediation with <code>ReentrantLock</code> and non-blocking semaphore pools.
+        </div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Pinned Throughput</div>
+            <div class="metric-val bad">184 req/s (Bottleneck)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Patched Throughput</div>
+            <div class="metric-val">48,210 req/s (+261x)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">P99 Latency Drop</div>
+            <div class="metric-val">1420ms &rarr; 1.82ms</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/virtual-thread-springs" target="_blank" rel="noopener">GitHub Repository ›</a>
+          <a href="thesis/">Dissertation &amp; Trials ›</a>
+          <a href="writing/virtual-thread-fallacy.html">Research Paper ›</a>
+        </div>
+      </article>
+
+      <!-- 5. resp-storage-engine -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/resp-storage-engine" target="_blank" rel="noopener">resp-storage-engine</a>
+          </h3>
+          <span class="project-badge lang-go">Go • Redis RESP2</span>
+        </div>
+        <div class="project-tagline">High-Throughput Concurrent In-Memory KV Store with Replication</div>
+        <div class="project-desc">
+          Concurrent in-memory storage engine implementing Redis Serialization Protocol (RESP2). Features zero-allocation byte builders, connection-scoped isolated <code>MULTI</code>/<code>EXEC</code> transactions, fine-grained <code>sync.RWMutex</code> locking verified race-free under <code>go test -race</code>, and master-replica offset streaming.
+        </div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Load Throughput</div>
+            <div class="metric-val">~100,000 ops/sec</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Data Races</div>
+            <div class="metric-val">0 (go test -race verified)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Replication</div>
+            <div class="metric-val">Streaming Offset Sync</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/resp-storage-engine" target="_blank" rel="noopener">GitHub Repository ›</a>
+        </div>
+      </article>
+
+      <!-- 6. while-x86-compiler -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/while-x86-compiler" target="_blank" rel="noopener">while-x86-compiler</a>
+          </h3>
+          <span class="project-badge lang-cpp">C++ • x86 Assembly</span>
+        </div>
+        <div class="project-tagline">Ahead-of-Time Compiler Generating 32-bit x86 NASM Binaries</div>
+        <div class="project-desc">
+          Full ahead-of-time compiler for the While imperative language. Features Flex scanner, Bisonc++ LALR(1) parser, AST semantic validation with symbol tables, and 32-bit x86 register code generator linked against native C runtime (<code>io.c</code>) via standard <code>cdecl</code> ABI.
+        </div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Target Architecture</div>
+            <div class="metric-val">32-bit x86 NASM / ELF</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Front-End</div>
+            <div class="metric-val">Flex + Bisonc++ LALR(1)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Runtime ABI</div>
+            <div class="metric-val">Standard cdecl Bridge</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/while-x86-compiler" target="_blank" rel="noopener">GitHub Repository ›</a>
+        </div>
+      </article>
+
+      <!-- 7. parallel-crdt -->
+      <article class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">
+            <a href="https://github.com/mohameddhamed/parallel-crdt" target="_blank" rel="noopener">parallel-crdt</a>
+          </h3>
+          <span class="project-badge lang-ts">TypeScript • CRDTs</span>
+        </div>
+        <div class="project-tagline">Peer-to-Peer Collaborative Editor Buffer for VS Code</div>
+        <div class="project-desc">
+          Real-time collaborative text editing extension built on Conflict-Free Replicated Data Types (CRDTs). Implements binary state vector exchange, WebSocket signaling, and mathematical eventual consistency with peer-specific selective undo using <code>Y.RelativePosition</code>.
+        </div>
+        <div class="project-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Consistency Model</div>
+            <div class="metric-val">Eventual (CRDT Provable)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Undo Mechanism</div>
+            <div class="metric-val">Peer Vector Clock Inversion</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Platform</div>
+            <div class="metric-val">VS Code Extension API</div>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/mohameddhamed/parallel-crdt" target="_blank" rel="noopener">GitHub Repository ›</a>
+          <a href="writing/crdt-selective-undo.html">Selective Undo Analysis ›</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Technical Competencies Matrix -->
+  <section id="competencies">
+    <h2 class="section-heading"><span class="sym">§</span> Technical Competencies &amp; Systems Toolchain</h2>
+    <div class="competency-grid">
+
+      <div class="competency-card">
+        <div class="competency-title">Concurrency &amp; Runtimes</div>
+        <div class="tag-list">
+          <span class="tag">Java 21 Virtual Threads</span>
+          <span class="tag">ForkJoinPool Internals</span>
+          <span class="tag">Monitor Pinning Detection</span>
+          <span class="tag">Lock-Free SkipLists</span>
+          <span class="tag">Disruptor Ring Buffers</span>
+          <span class="tag">CAS Atomics</span>
+          <span class="tag">ReentrantLock</span>
+          <span class="tag">JFR Telemetry</span>
+        </div>
+      </div>
+
+      <div class="competency-card">
+        <div class="competency-title">Storage &amp; Database Internals</div>
+        <div class="tag-list">
+          <span class="tag">SAP HANA TableStore</span>
+          <span class="tag">Columnar Memory Layouts</span>
+          <span class="tag">LSM-Tree Compaction</span>
+          <span class="tag">Direct I/O (io_uring)</span>
+          <span class="tag">AVX2 Bloom Filters</span>
+          <span class="tag">Dictionary Encoding</span>
+          <span class="tag">Redis RESP2 Engine</span>
+          <span class="tag">Redis Replication</span>
+        </div>
+      </div>
+
+      <div class="competency-card">
+        <div class="competency-title">Languages &amp; Compilers</div>
+        <div class="tag-list">
+          <span class="tag">Java 21 (Expert)</span>
+          <span class="tag">Rust (1.80+)</span>
+          <span class="tag">Modern C++ (C++20)</span>
+          <span class="tag">Go (1.22+)</span>
+          <span class="tag">32-bit x86 NASM</span>
+          <span class="tag">Flex &amp; Bisonc++</span>
+          <span class="tag">AST Code Generation</span>
+          <span class="tag">TypeScript / Node</span>
+        </div>
+      </div>
+
+      <div class="competency-card">
+        <div class="competency-title">Verification &amp; Tooling</div>
+        <div class="tag-list">
+          <span class="tag">ThreadSanitizer (TSan)</span>
+          <span class="tag">AddressSanitizer (ASan)</span>
+          <span class="tag">Go -race Detector</span>
+          <span class="tag">Criterion.rs Benchmarks</span>
+          <span class="tag">JMeter Load Testing</span>
+          <span class="tag">Docker</span>
+          <span class="tag">GitHub Actions CI/CD</span>
+          <span class="tag">Linux SRE / Perf</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Featured Research & Writing -->
+  <section id="research">
+    <h2 class="section-heading"><span class="sym">§</span> Systems Research &amp; Deep-Dives</h2>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin: 20px 0 40px 0;">
+      
+      <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 4px;">ACADEMIC DISSERTATION &amp; 125-TRIAL BENCHMARK</div>
+        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700;">
+          <a href="thesis/">Java Virtual Threads in Spring Boot Applications: Empirical Benchmarks on Throughput, Carrier Starvation, and Monitor Pinning Mitigation</a>
+        </div>
+        <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+          Includes interactive telemetry dashboard, trial logs, and downloadable 97-page M.Sc. thesis monograph.
+        </div>
+      </div>
+
+      <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 4px;">SYSTEMS WRITING • NOVEMBER 2026</div>
+        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700;">
+          <a href="writing/virtual-thread-fallacy.html">The Virtual Thread Concurrency Fallacy: Carrier Starvation and JDBC Pinning in High-Throughput Java 21 Runtimes</a>
+        </div>
+        <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+          Empirical evaluation of Project Loom under intensive MVC workloads: why unmonitored migration causes 8/8 carrier thread starvation and how ReentrantLocks restore 48,000+ req/s throughput.
+        </div>
+      </div>
+
+      <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 4px;">DATABASE INTERNALS • NOVEMBER 2026</div>
+        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700;">
+          <a href="writing/contiguous-memory-olap.html">Contiguous Memory Layouts and SIMD Selection Vectors in Vectorized OLAP Engines</a>
+        </div>
+        <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+          Dissecting SAP HANA TableStore columnar paradigms in Rust: bit-packed null masks, dictionary surrogate encoding, and morsel-driven SIMD scans yielding 3.96 billion elements per second.
+        </div>
+      </div>
+
+      <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 4px;">DISTRIBUTED SYSTEMS • NOVEMBER 2026</div>
+        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700;">
+          <a href="writing/crdt-selective-undo.html">Selective Undo via Vector Clock Inversion in Conflict-Free Replicated Data Types (CRDTs)</a>
+        </div>
+        <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+          Mathematical convergence and undo semantics in distributed collaborative editors: implementing selective peer rollback without branch fragmentation using Yjs relative positions.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Systems Footer -->
+  <footer class="sys-footer">
+    <div>
+      <span>*mohamed.sys &copy; 2026 Mohamed Hamed</span>
+      <span style="margin: 0 8px; color: var(--border);">|</span>
+      <span>0 kB Client Runtime • Zero Build Step</span>
+    </div>
+    <div class="footer-links">
+      <a href="key.pub">SSH Key</a>
+      <a href="feed.xml">RSS</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mohamedus.1970.hm@gmail.com">Email</a>
+    </div>
+  </footer>
+
+  <script src="assets/js/terminal.js"></script>
+</body>
+</html>

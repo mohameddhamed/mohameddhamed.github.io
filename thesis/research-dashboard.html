@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JFR Telemetry Research Dashboard — *mohamed.sys</title>
+  <meta name="description" content="Interactive SVG telemetry dashboard displaying empirical data from 125 benchmark trials evaluating Java 21 Project Loom virtual threads, throughput, and carrier thread pinning.">
+  <meta name="author" content="Mohamed Hamed">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <!-- Monospace Identity Header -->
+  <header class="sys-header">
+    <div class="sys-title">
+      <span class="star-accent">★</span> *mohamed.sys
+    </div>
+    <div class="sys-subtitle">
+      JFR Telemetry &amp; Concurrency Dashboard • Project Loom Empirical Benchmarking
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="sys-nav-links" aria-label="Breadcrumb Navigation">
+      <a href="../" class="term-link"><span class="bracket">[</span>&larr; root<span class="bracket">]</span></a>
+      <a href="./" class="term-link"><span class="bracket">[</span>thesis-anchor<span class="bracket">]</span></a>
+      <a href="research-dashboard.html" class="term-link active"><span class="bracket">[</span>interactive-telemetry<span class="bracket">]</span></a>
+      <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link"><span class="bracket">[</span>download-thesis.pdf<span class="bracket">]</span></a>
+      <a href="../writing/virtual-thread-fallacy.html" class="term-link"><span class="bracket">[</span>deep-dive-paper<span class="bracket">]</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="article-header">
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-bottom: 6px;">
+        INTERACTIVE DATA EXPLORER • 125 STANDARDIZED EMPIRICAL TRIALS
+      </div>
+      <h1 class="article-title">
+        Project Loom Concurrency &amp; JFR Telemetry Dashboard
+      </h1>
+      <div class="article-meta">
+        <span>Hardware: <strong>AMD EPYC 7763 64-Core (128 Threads)</strong></span>
+        <span>•</span>
+        <span>Runtime: <strong>OpenJDK 21.0.5 LTS</strong></span>
+        <span>•</span>
+        <span>OS: <strong>Ubuntu 22.04 LTS (Kernel 5.15)</strong></span>
+      </div>
+    </article>
+
+    <div class="systems-callout">
+      <strong>Telemetry Dashboard Instructions:</strong> Toggle between workload architectures and metrics below to observe empirical behavior across 125 benchmark trials. Notice how carrier pinning inside synchronized blocks reduces throughput by 99.6%, and how lock replacement restores full unpinned fiber scaling.
+    </div>
+
+    <!-- Dashboard Container with Filters and SVG Mount -->
+    <div class="dashboard-container">
+      
+      <!-- Workload Selector -->
+      <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">
+        1. Select Workload Profile:
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-workload="io">Workload A: Database &amp; Socket I/O (10k Concurrency)</button>
+        <button class="filter-btn" data-workload="mixed">Workload B: Mixed CPU / I/O Pipeline (25k Concurrency)</button>
+        <button class="filter-btn" data-workload="carriers">Workload C: Carrier Scaling (1 to 16 Carriers)</button>
+      </div>
+
+      <!-- Metric Selector -->
+      <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">
+        2. Select Measurement Metric:
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-metric="throughput">Throughput (req/s) &uarr;</button>
+        <button class="filter-btn" data-metric="p99">P99 Latency (ms) &darr;</button>
+        <button class="filter-btn" data-metric="pinnedEvents">JFR Pinning Events &darr;</button>
+      </div>
+
+      <!-- Chart Mount Point -->
+      <div id="dashboard-chart-mount">
+        <!-- Injected dynamically by dashboard.js -->
+      </div>
+
+    </div>
+
+    <!-- Experimental Rigor Breakdown -->
+    <section class="article-body">
+      <h2>Experimental Rig &amp; Verification Methodology</h2>
+      <p>
+        To ensure scientific repeatability, each trial was executed with automated JVM warm-up phases (120 seconds of sustained load) prior to measurement. Telemetry was collected via JDK Flight Recorder (JFR) using customized event configurations:
+      </p>
+      <ul>
+        <li><code>jdk.VirtualThreadPinned</code>: Threshold set to <code>0 ms</code> to capture every carrier thread pinning event.</li>
+        <li><code>jdk.VirtualThreadSubmitFailed</code>: Monitored to detect ForkJoinPool queue overflow and worker rejection.</li>
+        <li><code>jdk.CPULoad</code>: Captured at 100ms intervals to evaluate OS scheduler context switching vs. user-mode fiber scheduling.</li>
+        <li>Load generation: Distributed Locust and JMeter runner nodes operating on an isolated 10 GbE local backplane.</li>
+      </ul>
+
+      <div style="display: flex; gap: 16px; margin-top: 24px;">
+        <a href="index.html" class="term-link" style="color: var(--accent); font-weight: 600;">
+          &larr; Return to Thesis Overview &amp; Data Tables
+        </a>
+        <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link" style="color: var(--accent); font-weight: 600;">
+          Download Complete 97-Page Dissertation PDF ›
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Systems Footer -->
+  <footer class="sys-footer">
+    <div>
+      <span>*mohamed.sys &copy; 2026 Mohamed Hamed</span>
+      <span style="margin: 0 8px; color: var(--border);">|</span>
+      <span>0 kB Third-Party JS • Pure SVG Engine</span>
+    </div>
+    <div class="footer-links">
+      <a href="../key.pub">SSH Key</a>
+      <a href="../feed.xml">RSS</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#f5c542" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#f5c542" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#0b0d10"/>
+  <!-- Ambient outer glow -->
+  <circle cx="16" cy="16" r="10" fill="url(#glow)" filter="url(#blur)" opacity="0.45"/>
+  <!-- Crisp amber 4-point systems star -->
+  <path d="M 16 3 L 18.5 13.5 L 29 16 L 18.5 18.5 L 16 29 L 13.5 18.5 L 3 16 L 13.5 13.5 Z" fill="#f5c542"/>
+  <circle cx="16" cy="16" r="2" fill="#fffdf5"/>
+</svg>

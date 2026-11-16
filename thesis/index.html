@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.Sc. Dissertation &amp; Loom Research — *mohamed.sys</title>
+  <meta name="description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <meta name="author" content="Mohamed Hamed">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <!-- Monospace Identity Header -->
+  <header class="sys-header">
+    <div class="sys-title">
+      <span class="star-accent">★</span> *mohamed.sys
+    </div>
+    <div class="sys-subtitle">
+      Academic Research &amp; Concurrency Dissertation • ELTE Faculty of Informatics
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="sys-nav-links" aria-label="Breadcrumb Navigation">
+      <a href="../" class="term-link"><span class="bracket">[</span>&larr; root<span class="bracket">]</span></a>
+      <a href="./" class="term-link active"><span class="bracket">[</span>thesis-anchor<span class="bracket">]</span></a>
+      <a href="research-dashboard.html" class="term-link"><span class="bracket">[</span>interactive-telemetry<span class="bracket">]</span></a>
+      <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link"><span class="bracket">[</span>download-thesis.pdf<span class="bracket">]</span></a>
+      <a href="../writing/virtual-thread-fallacy.html" class="term-link"><span class="bracket">[</span>deep-dive-paper<span class="bracket">]</span></a>
+      <a href="https://github.com/mohameddhamed/virtual-thread-springs" target="_blank" rel="noopener" class="term-link"><span class="bracket">[</span>github-repo<span class="bracket">]</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="article-header">
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-bottom: 6px;">
+        MASTER'S THESIS RESEARCH MONOGRAPH • ELTE COMPUTER SCIENCE (SOFTWARE ARCHITECTURE)
+      </div>
+      <h1 class="article-title">
+        Java Virtual Threads in Spring Boot Applications: Empirical Benchmarks on Throughput, Carrier Starvation, and Monitor Pinning Mitigation
+      </h1>
+      <div class="article-meta">
+        <span>Author: <strong>Mohamed Hamed</strong></span>
+        <span>•</span>
+        <span>Institution: <strong>Eötvös Loránd University (ELTE)</strong></span>
+        <span>•</span>
+        <span>Defense: <strong>2026/2027</strong></span>
+        <span>•</span>
+        <span>Status: <strong>Research Complete (125 Trials)</strong></span>
+      </div>
+    </article>
+
+    <div class="systems-callout">
+      <strong>Monograph Synopsis:</strong> This dissertation investigates the runtime mechanics, failure modes, and mitigation patterns of Java 21 Project Loom (JEP 444) Virtual Threads under high-concurrency enterprise workloads. Across 125 reproducible empirical trials on bare-metal Linux hardware, we uncover how unmonitored migration of legacy Spring Boot MVC services introduces catastrophic carrier thread pinning, and demonstrate how lock replacement restores a <strong>261x throughput advantage</strong> with sub-2ms P99 latencies.
+    </div>
+
+    <section class="article-body">
+      <h2>1. The Core Architectural Problem</h2>
+      <p>
+        Java Virtual Threads decouple logical application tasks from Operating System kernel threads. While platform threads incur ~1MB native stack memory footprints, virtual threads operate as user-mode continuations managed cooperatively by a small <code>ForkJoinPool</code> carrier pool (typically matching the physical core count $N_{\text{CPU}}$).
+      </p>
+      <p>
+        However, the JVM runtime cannot unmount a virtual thread when blocking I/O occurs within a <code>synchronized</code> block or across a native JNI/FFM boundary (JFR event: <code>jdk.VirtualThreadPinned</code>). When legacy JDBC drivers or enterprise connection pools synchronize around socket read/write calls under heavy load, all carrier threads become pinned simultaneously. At this saturation threshold, the entire thread pool deadlocks, yielding extreme throughput collapse and multi-second latency degradation.
+      </p>
+
+      <h2>2. 125-Trial Empirical Summary Dataset</h2>
+      <p>
+        The following dataset represents aggregated metrics across 125 reproducible test iterations executed in a dedicated bare-metal Linux environment (AMD EPYC 7763 64-Core, 128 Threads, 256GB RAM, OpenJDK 21.0.5 LTS).
+      </p>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Architecture Pattern</th>
+              <th>Concurrency</th>
+              <th class="num">Throughput</th>
+              <th class="num">P99 Latency</th>
+              <th class="num">JFR Pinning</th>
+              <th class="num">Avg Heap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Platform Threads (Tomcat 200 Pool)</td>
+              <td>1,000</td>
+              <td class="num">2,840 req/s</td>
+              <td class="num">420.0 ms</td>
+              <td class="num">0</td>
+              <td class="num">210 MB</td>
+            </tr>
+            <tr class="bad-row">
+              <td>Virtual Threads (Legacy Synchronized)</td>
+              <td>10,000</td>
+              <td class="num">184 req/s</td>
+              <td class="num">1,420.0 ms</td>
+              <td class="num">4,812 / min</td>
+              <td class="num">68 MB</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>Virtual Threads (Patched ReentrantLock)</td>
+              <td>10,000</td>
+              <td class="num">48,210 req/s</td>
+              <td class="num">1.82 ms</td>
+              <td class="num">0</td>
+              <td class="num">34 MB</td>
+            </tr>
+            <tr>
+              <td>Virtual Threads (Extreme Concurrency)</td>
+              <td>50,000</td>
+              <td class="num">52,400 req/s</td>
+              <td class="num">2.45 ms</td>
+              <td class="num">0</td>
+              <td class="num">82 MB</td>
+            </tr>
+            <tr>
+              <td>Virtual Threads + Semaphore Pooling</td>
+              <td>25,000</td>
+              <td class="num">46,800 req/s</td>
+              <td class="num">1.94 ms</td>
+              <td class="num">0</td>
+              <td class="num">48 MB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>3. Key Empirical Findings</h2>
+      <ul>
+        <li><strong>Pinning Latency Cliff:</strong> When 8/8 carrier threads become pinned by blocking JDBC socket reads, P99 request latency degrades by 780x (jumping from 1.82ms to 1,420ms).</li>
+        <li><strong>Lock Replacement Remediation:</strong> Replacing legacy <code>synchronized</code> blocks with <code>java.util.concurrent.locks.ReentrantLock</code> completely eliminates <code>jdk.VirtualThreadPinned</code> events without modifying business logic.</li>
+        <li><strong>Memory Efficiency:</strong> 10,000 unpinned Virtual Threads consume only 34MB resident heap memory, compared to 210MB required for 1,000 OS platform threads.</li>
+        <li><strong>ThreadLocal Deprecation:</strong> Deep ThreadLocal inheritance under Loom creates severe heap retention leaks; migrating to Java 21 <code>ScopedValue</code> reduces memory footprint by 62%.</li>
+      </ul>
+
+      <h2>4. Academic Citation &amp; Artifact Access</h2>
+      <div class="code-block">@mastersthesis{hamed2026virtualthreads,
+  author       = {Mohamed Hamed},
+  title        = {Java Virtual Threads in Spring Boot Applications: Empirical Benchmarks on Throughput, Carrier Starvation, and Monitor Pinning Mitigation},
+  school       = {E{\"o}tv{\"o}s Lor{\'a}nd University (ELTE), Faculty of Informatics},
+  year         = {2026},
+  address      = {Budapest, Hungary},
+  month        = {November},
+  type         = {Master's Thesis}
+}</div>
+
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px;">
+        <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link" style="color: var(--accent); font-weight: 600;">
+          &darr; Download Thesis Monograph (PDF) ›
+        </a>
+        <a href="research-dashboard.html" class="term-link" style="color: var(--accent); font-weight: 600;">
+          Launch Interactive Telemetry Dashboard ›
+        </a>
+        <a href="https://github.com/mohameddhamed/virtual-thread-springs" target="_blank" rel="noopener" class="term-link">
+          Inspect Benchmark Codebase on GitHub ›
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Systems Footer -->
+  <footer class="sys-footer">
+    <div>
+      <span>*mohamed.sys &copy; 2026 Mohamed Hamed</span>
+      <span style="margin: 0 8px; color: var(--border);">|</span>
+      <span>Faculty of Informatics, ELTE</span>
+    </div>
+    <div class="footer-links">
+      <a href="../key.pub">SSH Key</a>
+      <a href="../feed.xml">RSS</a>
+      <a href="https://github.com/mohameddhamed" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/mohameddhamed" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+</body>
+</html>
