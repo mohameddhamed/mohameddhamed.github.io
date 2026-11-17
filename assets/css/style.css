@@ -156,6 +156,25 @@ header.sys-header {
   color: var(--accent);
 }
 
+/* Flagship Quick Links below Hero Terminal */
+.flagship-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: -16px 0 28px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.flagship-quick-links .quick-link-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Scrollytelling High-Contrast Systems Callout */
 .systems-callout {
   border-left: 3px solid var(--accent);
@@ -407,9 +426,11 @@ header.sys-header {
 /* Flagship Project Cards Grid */
 .project-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   margin: 24px 0 48px 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .project-card {
@@ -417,6 +438,8 @@ header.sys-header {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 22px 24px;
+  min-width: 0;
+  max-width: 100%;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -491,7 +514,11 @@ header.sys-header {
   line-height: 1.45;
   color: #adb5bd;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   white-space: pre;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .project-metrics {
@@ -821,11 +848,22 @@ footer.sys-footer {
 
   .sys-title {
     font-size: 1.75rem;
+    word-break: break-word;
+  }
+
+  .sys-nav-links {
+    gap: 10px 14px;
   }
 
   .term-window {
     transform: none !important;
-    margin: 24px 0;
+    margin: 20px 0;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .term-body {
+    padding: 14px 12px;
   }
 
   .milestone-rail {
@@ -837,8 +875,23 @@ footer.sys-footer {
     left: -23px;
   }
 
+  .project-card {
+    padding: 18px 14px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .project-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .competency-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .competency-card {
+    min-width: 0;
+    padding: 14px 14px;
   }
 
   footer.sys-footer {
