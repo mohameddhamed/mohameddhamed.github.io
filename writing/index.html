@@ -35,7 +35,7 @@
       <a href="./" class="term-link active"><span class="bracket">[</span>writing-index<span class="bracket">]</span></a>
       <a href="../thesis/" class="term-link"><span class="bracket">[</span>thesis<span class="bracket">]</span></a>
       <a href="../feed.xml" class="term-link"><span class="bracket">[</span>rss-feed<span class="bracket">]</span></a>
-      <a href="../assets/pdf/resume-mohamed-hamed.pdf" target="_blank" class="term-link"><span class="bracket">[</span>resume.pdf<span class="bracket">]</span></a>
+      <a href="../assets/pdf/Mohamed_Hamed_Resume_Java.pdf" target="_blank" class="term-link"><span class="bracket">[</span>resume.pdf<span class="bracket">]</span></a>
     </nav>
   </header>
 
@@ -52,15 +52,15 @@
       <!-- Article 1: Virtual Thread Fallacy -->
       <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
         <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
-          CONCURRENCY &amp; RUNTIMES • NOVEMBER 2026 • 16 MIN READ
+          CONCURRENCY &amp; RUNTIMES • NOVEMBER 2026
         </div>
         <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
           <a href="virtual-thread-fallacy.html" style="text-decoration: none; color: var(--fg-bright);">
-            The Virtual Thread Concurrency Fallacy: Carrier Starvation and JDBC Pinning in High-Throughput Java 21 Runtimes
+            Java Virtual Threads: Carrier Pinning and Critical-Section Serialization
           </a>
         </h2>
         <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
-          Why blindly enabling <code>spring.threads.virtual.enabled=true</code> in enterprise microservices causes sudden carrier thread starvation. A deep dive into JFR Flight Recorder telemetry, <code>ForkJoinPool</code> work-stealing limitations, and eliminating JDBC synchronized monitor pinning.
+          A controlled Spring Boot experiment on why carrier unpinning and critical-section throughput respond differently to a lock change.
         </p>
         <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
           <a href="virtual-thread-fallacy.html">Read Full Monograph ›</a>
@@ -71,7 +71,7 @@
       <!-- Article 2: Contiguous Memory OLAP -->
       <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
         <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
-          DATABASE INTERNALS • NOVEMBER 2026 • 14 MIN READ
+          DATABASE INTERNALS • NOVEMBER 2026
         </div>
         <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
           <a href="contiguous-memory-olap.html" style="text-decoration: none; color: var(--fg-bright);">
@@ -79,7 +79,7 @@
           </a>
         </h2>
         <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
-          Dissecting the mechanical internals of SAP HANA TableStore: implementing contiguous memory arrays, bit-packed null masks (0.125 bytes/row), dictionary surrogate encoding, and morsel-driven SIMD filtering in Rust to achieve 3.96 billion elements per second scan throughput.
+          Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.
         </p>
         <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
           <a href="contiguous-memory-olap.html">Read Full Monograph ›</a>
@@ -90,15 +90,15 @@
       <!-- Article 3: CRDT Selective Undo -->
       <article style="background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px;">
         <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px;">
-          DISTRIBUTED SYSTEMS • NOVEMBER 2026 • 12 MIN READ
+          DISTRIBUTED SYSTEMS • NOVEMBER 2026
         </div>
         <h2 style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
           <a href="crdt-selective-undo.html" style="text-decoration: none; color: var(--fg-bright);">
-            Selective Undo via Vector Clock Inversion in Conflict-Free Replicated Data Types (CRDTs)
+            Selective Undo in Collaborative Editors
           </a>
         </h2>
         <p style="font-size: 14px; color: #c5c7cb; line-height: 1.6; margin-bottom: 14px;">
-          How to achieve local undo in peer-to-peer collaborative editing without reverting remote collaborators' operations. A formal breakdown of Yjs binary state vectors, relative positions, and causal tree inversion.
+          Design notes on tracking local edits in a collaborative editor, with context from the Yjs and WebSocket integration in Parallel Code.
         </p>
         <div style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 12px;">
           <a href="crdt-selective-undo.html">Read Full Monograph ›</a>

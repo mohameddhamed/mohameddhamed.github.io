@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRDT Selective Undo via Vector Inversion — *mohamed.sys</title>
-  <meta name="description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
+  <title>Selective Undo in Collaborative Editors — *mohamed.sys</title>
+  <meta name="description" content="Design notes on tracking local edits in a collaborative editor, with context from the Yjs and WebSocket integration in Parallel Code.">
   <meta name="author" content="Mohamed Hamed">
-  <meta property="og:title" content="CRDT Selective Undo via Vector Inversion — *mohamed.sys">
-  <meta property="og:description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
+  <meta property="og:title" content="Selective Undo in Collaborative Editors — *mohamed.sys">
+  <meta property="og:description" content="Design notes on tracking local edits in a collaborative editor, with context from the Yjs and WebSocket integration in Parallel Code.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mohameddhamed.github.io/writing/crdt-selective-undo.html">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="CRDT Selective Undo via Vector Inversion — *mohamed.sys">
-  <meta name="twitter:description" content="Technical monograph on distributed systems, Conflict-Free Replicated Data Types (CRDTs), vector clocks, and peer-specific selective undo in collaborative text editors.">
+  <meta name="twitter:title" content="Selective Undo in Collaborative Editors — *mohamed.sys">
+  <meta name="twitter:description" content="Design notes on tracking local edits in a collaborative editor, with context from the Yjs and WebSocket integration in Parallel Code.">
   <link rel="canonical" href="https://mohameddhamed.github.io/writing/crdt-selective-undo.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
@@ -44,7 +44,7 @@
         DISTRIBUTED SYSTEMS • NOVEMBER 2, 2026 • MOHAMED HAMED
       </div>
       <h1 class="article-title">
-        Selective Undo via Vector Clock Inversion in Conflict-Free Replicated Data Types (CRDTs)
+        Selective Undo in Collaborative Editors
       </h1>
       <div class="article-meta">
         <span>Domain: <strong>Distributed Systems &amp; Concurrency</strong></span>
@@ -56,86 +56,19 @@
     </article>
 
     <div class="systems-callout">
-      <strong>The Collaborative Undo Dilemma:</strong> In a single-user editor, undo is trivial: pop the top action from a linear stack and revert its character delta. In a distributed multi-user editor with peer-to-peer WebSocket synchronization, a local user's <code>Ctrl+Z</code> must invert <em>only</em> their own past operations, while strictly preserving interleaved concurrent edits introduced by remote peers.
+      When collaborators edit the same document, numeric offsets can shift between a local edit and its undo. A selective undo design needs to track which changes originated locally and account for remote edits that arrived in the meantime.
     </div>
 
     <section class="article-body">
-      <h2>1. The Breakdown of Linear Undo in Distributed Buffers</h2>
-      <p>
-        In centralized or single-threaded text editors, editing operations are recorded as absolute offset shifts:
-      </p>
-      <div class="code-block">
-Action: Delete 5 characters at offset 14.
-Inverse: Insert the deleted 5 characters at offset 14.</div>
+      <h2>1. Why offsets become stale</h2>
+      <p>Suppose Alice inserts a word at an offset and Bob inserts text before her edit. Undoing Alice's edit by deleting at its original offset may target Bob's text. An editor can track edits using document-relative identifiers and resolve positions against the current document.</p>
 
-      <p>
-        Consider two concurrent collaborators, Alice (Client 1) and Bob (Client 2), operating on a shared document with initial text <code>"The brown fox"</code>:
-      </p>
-      <ol>
-        <li>At <em>t</em><sub>1</sub>, Alice types <code>"quick "</code> at index 4 &rarr; <code>"The quick brown fox"</code>.</li>
-        <li>At <em>t</em><sub>2</sub>, before receiving Alice's update, Bob types <code>"lazy "</code> at index 10 &rarr; intended to precede <code>"fox"</code>.</li>
-        <li>Both peers synchronize over WebSockets and converge cleanly via CRDT ordering.</li>
-        <li>At <em>t</em><sub>3</sub>, Alice presses <code>Ctrl+Z</code>.</li>
-      </ol>
-      <p>
-        If Alice's client simply deletes 6 characters starting at absolute index 4, but Bob's concurrent insertions shifted the document structure, Alice's naive undo either deletes Bob's keystrokes or splices characters at an invalid offset.
-      </p>
+      <h2>2. Designing local undo with Yjs</h2>
+      <p>Yjs provides an <code>UndoManager</code> that scopes changes to shared types and can track selected transaction origins. An integration can tag local edits with a distinct origin, group related local edits, and leave remote synchronization updates outside the local undo history. Relative positions can help preserve cursor anchors as the document changes.</p>
+      <p>Interleaved insertions, remote deletion of locally inserted text, and redo after a remote update are cases to test with multiple connected clients.</p>
 
-      <h2>2. CRDT Foundations: Identifiers over Index Offsets</h2>
-      <p>
-        In state-based sequence CRDTs (such as Yjs, Fugue, or RGA), characters are never addressed by volatile integer array indices. Instead, each character item is assigned an immutable global identifier:
-      </p>
-      <div class="code-block">ID = (ClientID, LamportClock)</div>
-      <p>
-        Every inserted character forms a node in an internal double-linked tree. An insertion references the ID of its preceding left neighbor (<code>origin</code>) and right neighbor (<code>rightOrigin</code>). Deleting a character does not remove its node from memory; instead, it marks the node with a tombstone bit (<code>deleted = true</code>) to preserve the causal coordinate plane for concurrent peers.
-      </p>
-
-      <h2>3. The Architecture of Selective Undo</h2>
-      <p>
-        To implement selective local undo, the editor maintains a client-scoped undo manager that tracks a stack of <strong>undo items</strong> containing sets of item IDs created or deleted by the local user within a transaction scope.
-      </p>
-
-      <div class="code-block">
-[Local Mutation Event]
-         │
-         ▼
-[Capture Transaction Scope] ──&gt; Filter operations where item.id.client == localClient
-         │
-         ▼
-[Push to UndoStack] ──────────&gt; Store RelativePositions (Immutable ID pointers)
-         │
-         ▼ (User presses Ctrl+Z)
-[Pop UndoStack] ──────────────&gt; Generate Inverse Mutation as a NEW Forward Op</div>
-
-      <h2>4. Transforming Inverse Operations into Forward Events</h2>
-      <p>
-        A foundational theorem in distributed CRDT theory states that <em>an undo operation must never alter past history</em>. Rolling back the Lamport clock or modifying past state vectors breaks eventual consistency across peers.
-      </p>
-      <p>
-        Instead, an undo operation is mathematically applied as a <strong>new forward mutation</strong> with a new incremented vector clock tick:
-      </p>
-      <ul>
-        <li><strong>Undoing an Insertion:</strong> If Alice previously inserted item <code>(Client 1, Clock 42)</code>, undoing it generates a forward delete operation targeting the tombstone state of <code>(Client 1, Clock 42)</code>.</li>
-        <li><strong>Undoing a Deletion:</strong> If Alice previously deleted item <code>(Client 2, Clock 18)</code>, undoing it does <em>not</em> unmark the tombstone. Instead, it re-inserts a duplicate character with reference to the original origin, but with a brand-new ID: <code>(Client 1, Clock 95)</code>.</li>
-      </ul>
-
-      <h2>5. Concurrency Verification &amp; Edge Cases</h2>
-      <p>
-        In our implementation of <code>parallel-crdt</code> for Visual Studio Code, we verified the following edge cases:
-      </p>
-      <ul>
-        <li><strong>Interleaved Insertions:</strong> Alice and Bob type simultaneously within the same word. Alice undoes her edits; Bob's characters remain in place with zero corruption.</li>
-        <li><strong>Remote Deletion of Local Insertions:</strong> Alice inserts text; Bob deletes Alice's text. Alice presses undo. Because Bob explicitly deleted the text after Alice's insertion, the undo manager respects Bob's causal intention and does not resurrect the deleted node.</li>
-        <li><strong>Selective Redo:</strong> Redoing an undone operation pushes the state forward again using symmetrical inversion.</li>
-      </ul>
-
-      <h2>6. Conclusion &amp; Code Access</h2>
-      <p>
-        By decoupling physical document indices from causal item coordinates and modeling inverse mutations as forward-propagating vector clock events, selective undo achieves mathematical convergence across distributed clients with zero server-side lock coordination.
-      </p>
-      <p>
-        The complete implementation, including WebSocket signaling and VS Code language buffer bindings, is available in the <code>parallel-crdt</code> repository.
-      </p>
+      <h2>3. Parallel Code</h2>
+      <p>The VS Code extension integrates Yjs document synchronization through a WebSocket server. The selective undo design above is illustrative. The repository provides the extension and connection code.</p>
     </section>
   </main>
 

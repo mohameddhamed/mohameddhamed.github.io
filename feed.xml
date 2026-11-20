@@ -9,12 +9,12 @@
     <atom:link href="https://mohameddhamed.github.io/feed.xml" rel="self" type="application/rss+xml"/>
 
     <item>
-      <title>The Virtual Thread Concurrency Fallacy: Carrier Starvation and JDBC Pinning in High-Throughput Java 21 Runtimes</title>
+      <title>Java Virtual Threads: Carrier Pinning and Critical-Section Serialization</title>
       <link>https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html</link>
       <guid>https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html</guid>
       <pubDate>Sun, 15 Nov 2026 12:00:00 GMT</pubDate>
       <author>mohamedus.1970.hm@gmail.com (Mohamed Hamed)</author>
-      <description>Empirical evaluation of Project Loom under intensive MVC workloads: why unmonitored migration causes 8/8 carrier thread starvation and how ReentrantLocks restore 48,000+ req/s throughput.</description>
+      <description>A controlled Spring Boot experiment on why carrier unpinning and critical-section throughput respond differently to a lock change.</description>
     </item>
 
     <item>
@@ -23,25 +23,25 @@
       <guid>https://mohameddhamed.github.io/writing/contiguous-memory-olap.html</guid>
       <pubDate>Thu, 12 Nov 2026 10:00:00 GMT</pubDate>
       <author>mohamedus.1970.hm@gmail.com (Mohamed Hamed)</author>
-      <description>Dissecting SAP HANA TableStore columnar paradigms in Rust: bit-packed null masks, dictionary surrogate encoding, and morsel-driven SIMD scans yielding 3.96 billion elements per second.</description>
+      <description>Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.</description>
     </item>
 
     <item>
-      <title>Selective Undo via Vector Clock Inversion in Conflict-Free Replicated Data Types (CRDTs)</title>
+      <title>Selective Undo in Collaborative Editors</title>
       <link>https://mohameddhamed.github.io/writing/crdt-selective-undo.html</link>
       <guid>https://mohameddhamed.github.io/writing/crdt-selective-undo.html</guid>
       <pubDate>Mon, 02 Nov 2026 09:00:00 GMT</pubDate>
       <author>mohamedus.1970.hm@gmail.com (Mohamed Hamed)</author>
-      <description>Mathematical convergence and undo semantics in distributed collaborative editors: implementing selective peer rollback without branch fragmentation using Yjs relative positions.</description>
+      <description>Design notes on tracking local edits in a collaborative editor, with context from the Yjs and WebSocket integration in Parallel Code.</description>
     </item>
 
     <item>
-      <title>M.Sc. Dissertation: Java Virtual Threads in Spring Boot Applications (125-Trial Empirical Benchmark)</title>
+      <title>Migrating Spring Boot MVC Systems to Java 21 Virtual Threads: Architecture, Risks, and Engineering Guidelines</title>
       <link>https://mohameddhamed.github.io/thesis/</link>
       <guid>https://mohameddhamed.github.io/thesis/</guid>
       <pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate>
       <author>mohamedus.1970.hm@gmail.com (Mohamed Hamed)</author>
-      <description>Formal academic dissertation defending at ELTE Faculty of Informatics: benchmarking throughput, thread pinning, and OS vs green thread concurrency across 125 reproducible trials.</description>
+      <description>ELTE M.Sc. thesis research on virtual threads in Spring Boot, with the full research PDF, selected comparisons and supporting evidence.</description>
     </item>
   </channel>
 </rss>

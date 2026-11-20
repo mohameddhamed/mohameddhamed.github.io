@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Virtual Thread Concurrency Fallacy — *mohamed.sys</title>
-  <meta name="description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
+  <title>Java Virtual Threads: Carrier Pinning and Critical-Section Serialization — *mohamed.sys</title>
+  <meta name="description" content="A controlled Spring Boot experiment separating Java 21 carrier pinning from critical-section serialization, with Java 24 and persistence comparisons.">
   <meta name="author" content="Mohamed Hamed">
-  <meta property="og:title" content="The Virtual Thread Concurrency Fallacy — *mohamed.sys">
-  <meta property="og:description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
+  <meta property="og:title" content="Java Virtual Threads: Carrier Pinning and Critical-Section Serialization — *mohamed.sys">
+  <meta property="og:description" content="A controlled Spring Boot experiment separating Java 21 carrier pinning from critical-section serialization, with Java 24 and persistence comparisons.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="The Virtual Thread Concurrency Fallacy — *mohamed.sys">
-  <meta name="twitter:description" content="Empirical analysis of Java 21 Virtual Threads, carrier thread starvation, JDBC synchronized monitor pinning, and JVM HotSpot continuation mechanics under heavy load.">
+  <meta name="twitter:title" content="Java Virtual Threads: Carrier Pinning and Critical-Section Serialization — *mohamed.sys">
+  <meta name="twitter:description" content="A controlled Spring Boot experiment separating Java 21 carrier pinning from critical-section serialization, with Java 24 and persistence comparisons.">
   <link rel="canonical" href="https://mohameddhamed.github.io/writing/virtual-thread-fallacy.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
@@ -45,165 +45,42 @@
         CONCURRENCY &amp; RUNTIMES • NOVEMBER 15, 2026 • MOHAMED HAMED
       </div>
       <h1 class="article-title">
-        The Virtual Thread Concurrency Fallacy: Carrier Starvation and JDBC Pinning in High-Throughput Java 21 Runtimes
+        Java Virtual Threads: Carrier Pinning and Critical-Section Serialization
       </h1>
       <div class="article-meta">
         <span>Target: <strong>Enterprise Java &amp; Spring Boot 3</strong></span>
         <span>•</span>
         <span>Telemetry: <strong>JFR (jdk.VirtualThreadPinned)</strong></span>
         <span>•</span>
-        <span>Empirical Trials: <strong>125 Standardized Runs</strong></span>
+        <span>Environment: <strong>Apple M1, 8 GB</strong></span>
       </div>
     </article>
 
     <div class="systems-callout">
-      <strong>Core Thesis:</strong> Upgrading to Java 21 and flipping <code>spring.threads.virtual.enabled=true</code> does not provide free scalability for legacy enterprise codebases. Under high concurrency (&gt;10,000 active requests), unmonitored synchronization around blocking network or database I/O pins JVM carrier threads, reducing throughput by up to <strong>99.6%</strong> and causing complete thread pool starvation.
+      Switching from <code>synchronized</code> to <code>ReentrantLock</code> changed carrier pinning in the Java 21 payment experiment. Both locks still held requests to roughly two per second because the critical section took 500 ms.
     </div>
 
     <section class="article-body">
-      <h2>1. The Mechanics of User-Mode Continuations</h2>
-      <p>
-        In Java 21 LTS (JEP 444), Virtual Threads represent lightweight, user-mode fibers whose scheduling is decoupled from OS platform threads. While a conventional Operating System thread claims a dedicated 1 MB stack allocation and incurs kernel context-switch penalties, a Virtual Thread consists of a <code>java.lang.VirtualThread</code> instance whose call stack chunks reside in garbage-collected heap memory.
-      </p>
-      <p>
-        HotSpot manages execution through a shared <code>ForkJoinPool</code> work-stealing scheduler with parallelism typically configured to the host machine's logical core count:
-      </p>
-      <div class="code-block">Parallelism = Runtime.getRuntime().availableProcessors(); // e.g. 8 or 16 carrier threads</div>
-      <p>
-        When a Virtual Thread executes non-blocking code or initiates a native socket read via modern <code>java.nio</code>, HotSpot unmounts the Virtual Thread's continuation from its carrier OS thread, parking the fiber on the epoll/kqueue event loop. The carrier thread immediately steals another runnable virtual thread from the work queue, maintaining high CPU utilization.
-      </p>
+      <h2>1. What a pinned carrier changes</h2>
+      <p>A virtual thread runs on a platform thread called a carrier. During a supported blocking operation the virtual thread can unmount, leaving that carrier free to run other work. On Java 21, blocking while holding a Java monitor can keep the carrier occupied. Both <code>synchronized</code> and <code>ReentrantLock</code> still enforce mutual exclusion around the protected operation.</p>
 
-      <h2>2. The Monitor Pinning Failure Mode</h2>
-      <p>
-        The architectural Achilles' heel of Project Loom lies in the implementation of JVM continuation boundaries. Under HotSpot internals, a Virtual Thread <strong>cannot unmount</strong> from its carrier OS thread under two specific conditions:
-      </p>
-      <ol>
-        <li>When execution occurs inside a <code>synchronized</code> block or synchronized method (Java monitor acquisition).</li>
-        <li>When execution traverses a native frame via JNI or foreign function invocation (FFM).</li>
-      </ol>
-      <p>
-        When a Virtual Thread attempts a blocking I/O operation (such as a database query, socket read, or network RPC) while holding a monitor lock, the JVM cannot yield. Instead, the Virtual Thread <em>pins</em> its carrier OS thread. The underlying kernel thread is forced into a blocking OS-level sleep:
-      </p>
+      <h2>2. The controlled payment comparison</h2>
+      <p>The October 15 runs used Java 21.0.8, Spring Boot 3.5.12, one carrier and 10 closed-loop k6 virtual users. The synthetic <code>/payments</code> endpoint held a shared lock across a 500 ms operation. Each treatment had three process-level repetitions with 108 completed requests per run.</p>
+      <div class="code-block">October 15, 2026 (stratum 1)  synchronized  ReentrantLock
+Mean steady throughput          1.967 req/s   1.956 req/s
+Mean steady p50                 4,966.8 ms    4,982.0 ms
+JFR pin events per run           108           0</div>
+      <p>The JFR profile counted qualifying events at a 20 ms threshold. The throughput and latency values use the 30-second steady window. The shared critical section still admitted one request at a time, giving a capacity bound near <code>1 / 0.500 s</code>.</p>
+      <p>The platform-thread control retained the lock. The no-lock control allowed the simulated operations to overlap by dropping mutual exclusion. The historical October 8 eight-carrier baseline belongs to a separate run set and recorded 110 pins per synchronized run.</p>
 
-      <div class="code-block">
-[Virtual Thread 1] ── synchronized(lock) ──&gt; socket.read() [BLOCKED]
-                                                     │
-                                                     ▼ (PINS CARRIER)
-[Carrier Worker 1] ────────────────────────────────&gt; [FROZEN IN OS KERNEL]
-[Carrier Worker 2] ── synchronized(lock) ──&gt; socket.read() [FROZEN]
-...
-[Carrier Worker 8] ── synchronized(lock) ──&gt; socket.read() [FROZEN]
-========================================================================
-RESULT: 8/8 Carriers Saturated. 9,992 Virtual Threads Starved in Queue.</div>
+      <h2>3. Java 24 and native boundaries</h2>
+      <p>For the Java 24.0.2 comparison (stratum 2), JEP 491 allowed unmounting while holding a monitor. Both lock treatments recorded zero pins and averaged 1.967 steady req/s. In the separate JNI experiments (stratum 3), blocking native calls occupied carriers despite zero recorded pin events. Interpret JFR counts alongside workload and scheduling evidence.</p>
 
-      <h2>3. JFR Flight Recorder Telemetry Evidence</h2>
-      <p>
-        In our empirical benchmarking across 125 reproducible test runs on a 64-core AMD EPYC server, we captured the exact signature of carrier saturation using JDK Flight Recorder:
-      </p>
-      <div class="code-block">
-$ jfr print --events jdk.VirtualThreadPinned benchmark-run-42.jfr
+      <h2>4. Connection pool contention</h2>
+      <p>In the six connection-held runs (stratum 8), Java 21.0.12.1 handled 50 virtual users with embedded H2 and a simulated 300 ms hold after connection acquisition. Increasing the HikariCP pool from one connection to ten changed steady throughput from 3.27 to 32.60 req/s and mean steady p50 from 15.12 to 1.43 seconds. JFR recorded zero pins in both treatments. These results measure pool contention under this workload.</p>
 
-jdk.VirtualThreadPinned {
-  startTime = 14:22:04.108
-  duration = 42.1 ms
-  carrierThread = "ForkJoinPool-1-worker-3" (OS Thread ID: 89412)
-  pinnedThread = "VirtualThread-10492"
-  stackTrace = [
-    java.net.SocketInputStream.read(byte[], int, int)
-    org.postgresql.core.VisibleBufferedInputStream.readMore(int)
-    org.postgresql.core.v3.QueryExecutorImpl.execute(...)
-    synchronized (lock) { ... }  // &lt;-- MONITOR PINNING ROOT CAUSE
-  ]
-}</div>
-
-      <p>
-        Under 10,000 concurrent HTTP requests, carrier thread saturation occurred within 850 milliseconds. Once all 8 worker threads in the ForkJoinPool became pinned simultaneously, throughput collapsed from <strong>48,210 req/s down to 184 req/s</strong>, and P99 tail latency skyrocketed to <strong>1,420 ms</strong>.
-      </p>
-
-      <h2>4. The HikariCP Connection Pool Deadlock</h2>
-      <p>
-        A related failure pattern involves database connection sizing. In traditional platform thread configurations, thread count (e.g. 200) naturally bounds the contention for the database pool (<code>M<sub>pool</sub> = 20</code>).
-      </p>
-      <p>
-        With Virtual Threads, applications freely spawn 10,000 concurrent fibers. When 10,000 threads simultaneously invoke <code>dataSource.getConnection()</code>, the connection pool becomes saturated in microseconds. If connection acquisition logic utilizes synchronized synchronization blocks, all carrier threads become pinned waiting for connections that cannot be released because the releasing threads are queued behind starved carriers.
-      </p>
-
-      <h2>5. Remediation: ReentrantLock &amp; ScopedValues</h2>
-      <p>
-        Remediating carrier pinning does not require reverting to platform threads. The solution consists of replacing synchronized blocks with <code>java.util.concurrent.locks.ReentrantLock</code>:
-      </p>
-
-      <div class="code-block">
-// --- ANTI-PATTERN: Induces jdk.VirtualThreadPinned ---
-public synchronized byte[] readFromSocket() {
-    return socketStream.readNBytes(4096); // PINS CARRIER THREAD!
-}
-
-// --- REMEDIATED: Carrier-Safe Non-Blocking Yield ---
-private final ReentrantLock lock = new ReentrantLock();
-
-public byte[] readFromSocket() {
-    lock.lock();
-    try {
-        return socketStream.readNBytes(4096); // Carrier cleanly unmounts!
-    } finally {
-        lock.unlock();
-    }
-}</div>
-
-      <p>
-        Unlike synchronized monitors, <code>ReentrantLock</code> is implemented entirely in user space via <code>AbstractQueuedSynchronizer</code> (AQS). When a Virtual Thread waits on an AQS lock, HotSpot safely unmounts its continuation, leaving the carrier thread free to service other requests.
-      </p>
-
-      <h3>Mitigating ThreadLocal Memory Leaks with ScopedValue</h3>
-      <p>
-        Enterprise Spring frameworks frequently bind security contexts, tenant IDs, and transaction scopes to <code>ThreadLocal</code>. When 50,000 Virtual Threads are spawned, each retains a copy of the ThreadLocal map. Because Virtual Threads may be held in object references, these maps frequently escape generational garbage collection.
-      </p>
-      <p>
-        Migrating to Java 21's preview <code>ScopedValue</code> introduces immutable, per-call-tree contextual inheritance that is automatically discarded upon method return, reducing resident heap retention by 62%.
-      </p>
-
-      <h2>6. Benchmark Comparison Table</h2>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Runtime Architecture</th>
-              <th class="num">Throughput</th>
-              <th class="num">P99 Latency</th>
-              <th class="num">Carriers Pinned</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Tomcat Platform Threads (Pool=200)</td>
-              <td class="num">2,840 req/s</td>
-              <td class="num">420 ms</td>
-              <td class="num">N/A</td>
-            </tr>
-            <tr class="bad-row">
-              <td>Virtual Threads (Synchronized JDBC)</td>
-              <td class="num">184 req/s</td>
-              <td class="num">1,420 ms</td>
-              <td class="num">8 / 8 (100%)</td>
-            </tr>
-            <tr class="highlight-row">
-              <td>Virtual Threads (ReentrantLock Patched)</td>
-              <td class="num">48,210 req/s</td>
-              <td class="num">1.82 ms</td>
-              <td class="num">0 / 8 (0%)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>7. Production Checklist for Virtual Thread Migration</h2>
-      <ol>
-        <li><strong>Run JFR with Pinning Events:</strong> Run tests with <code>-XX:StartFlightRecording=filename=recording.jfr,settings=profile</code> and assert zero <code>jdk.VirtualThreadPinned</code> events.</li>
-        <li><strong>Audit Third-Party Drivers:</strong> Verify that your JDBC driver (PostgreSQL &ge; 42.6.0, MySQL Connector/J &ge; 8.2.0) has eliminated synchronized network blocks.</li>
-        <li><strong>Bound Concurrency with Semaphores:</strong> Do not pool virtual threads; pool the scarce resource (database connections) using <code>java.util.concurrent.Semaphore</code>.</li>
-        <li><strong>Replace Synchronized with ReentrantLock:</strong> Ensure that all code paths holding locks across blocking network calls utilize AQS-based primitives.</li>
-      </ol>
+      <h2>5. Artifacts</h2>
+      <p>The <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/04-methodology.tex">methodology</a> defines the workload strata and admission criteria. The <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/06-results.tex">results chapter</a> reports each comparison and the <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/docs/evidence-freeze/metric-recalculations.csv">run-level recalculations</a> trace the steady-window lock figures to the k6 results. The <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/scripts/analyze_persistence_results.py">persistence analysis script</a> uses k6 order-duration points.</p>
     </section>
   </main>
 

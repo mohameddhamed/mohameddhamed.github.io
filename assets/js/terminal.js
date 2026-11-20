@@ -1,6 +1,6 @@
 /**
  * terminal.js — Race-free, abortable terminal playback engine for *mohamed.sys
- * Replays authentic M.Sc. thesis research telemetry on Project Loom concurrency.
+ * Plays a reconstructed summary of the October 15 lock comparison.
  * Supports cancellation via AbortController and adheres to prefers-reduced-motion.
  */
 
@@ -13,15 +13,15 @@
     { type: "input", prompt: "mohamed@node-01:~$ ", text: "./replay-stratum-1-telemetry --mechanism-isolation --concurrency=10-vus", delay: 20 },
     { type: "output", text: "[0.00s] [INFO] OpenJDK 21.0.8 · Spring Boot 3.5.12 · Apple M1 · parallelism=1", cls: "t-muted", pause: 180 },
     { type: "output", text: "[0.20s] [TELEMETRY] Monitoring ForkJoinPool single carrier under 10 closed-loop VUs", cls: "t-muted", pause: 200 },
-    { type: "output", text: "[0.55s] [TRIAL-1] /payments endpoint · lock=synchronized · critical_section=500ms", cls: "t-fg", pause: 220 },
-    { type: "output", text: "[0.90s] [WARN] JFR Event: jdk.VirtualThreadPinned threshold=20ms duration=500ms", cls: "t-bad", pause: 240 },
-    { type: "output", text: "[1.20s] [TELEMETRY] HotSpot continuation frozen: carrier thread captive in OS sleep", cls: "t-bad", pause: 260 },
-    { type: "output", text: "[1.50s] [MEASURED] Steady-state throughput: 1.97 req/s | p50 latency: 4,966.8 ms", cls: "t-bad", pause: 450 },
-    { type: "input", prompt: "mohamed@node-01:~$ ", text: "./patch-runtime --replace-synchronized-with-reentrant-locks", delay: 18 },
-    { type: "output", text: "[1.80s] [TRIAL-2] /payments endpoint · lock=ReentrantLock · critical_section=500ms", cls: "t-fg", pause: 250 },
-    { type: "output", text: "[2.10s] [OK  ] JFR: 0 jdk.VirtualThreadPinned events. Fiber unmounts via LockSupport.park().", cls: "t-ok", pause: 220 },
-    { type: "output", text: "[2.40s] [MEASURED] Carrier unpinned. Steady-state throughput: 1.96 req/s | p50: 4,982.0 ms", cls: "t-ok", pause: 300 },
-    { type: "output", text: "[2.70s] [FINDING] Decoupling proof: throughput delta is 0.20%. Serialized critical-section capacity bound = 1/0.500s = 2.0 req/s.", cls: "t-accent", pause: 400 },
+    { type: "output", text: "[0.55s] [TREATMENT A] /payments endpoint · lock=synchronized · critical_section=500ms", cls: "t-fg", pause: 220 },
+    { type: "output", text: "[0.90s] [JFR] 108 qualifying pin events per run (20 ms threshold)", cls: "t-bad", pause: 240 },
+    { type: "output", text: "[1.20s] [CONTEXT] Three measured runs per treatment. Timestamps show replay time.", cls: "t-bad", pause: 260 },
+    { type: "output", text: "[1.50s] [MEAN] Steady throughput: 1.967 req/s | steady p50: 4,966.8 ms", cls: "t-bad", pause: 450 },
+    { type: "input", prompt: "mohamed@node-01:~$ ", text: "./show-treatment --lock=reentrant-lock", delay: 18 },
+    { type: "output", text: "[1.80s] [TREATMENT B] /payments endpoint · lock=ReentrantLock · critical_section=500ms", cls: "t-fg", pause: 250 },
+    { type: "output", text: "[2.10s] [JFR] 0 qualifying pin events per run", cls: "t-ok", pause: 220 },
+    { type: "output", text: "[2.40s] [MEAN] Steady throughput: 1.956 req/s | steady p50: 4,982.0 ms", cls: "t-ok", pause: 300 },
+    { type: "output", text: "[2.70s] [FINDING] Both locks serialize the 500 ms operation. Capacity bound: about 2 req/s.", cls: "t-accent", pause: 400 },
     { type: "output", text: "[2.90s] [CONCLUSION] Unpinning carriers restores thread scheduling, but mutual exclusion preserves queueing.", cls: "t-accent", pause: 500 }
   ];
 

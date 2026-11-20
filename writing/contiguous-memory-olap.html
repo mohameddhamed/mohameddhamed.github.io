@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys</title>
-  <meta name="description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
+  <meta name="description" content="Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.">
   <meta name="author" content="Mohamed Hamed">
   <meta property="og:title" content="Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys">
-  <meta property="og:description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
+  <meta property="og:description" content="Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mohameddhamed.github.io/writing/contiguous-memory-olap.html">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Contiguous Memory Layouts &amp; Vectorized OLAP — *mohamed.sys">
-  <meta name="twitter:description" content="Technical monograph on in-memory database internals, SAP HANA TableStore columnar paradigms, bit-packed null masks, dictionary encoding, and SIMD execution in Rust.">
+  <meta name="twitter:description" content="Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.">
   <link rel="canonical" href="https://mohameddhamed.github.io/writing/contiguous-memory-olap.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
@@ -49,14 +49,14 @@
       <div class="article-meta">
         <span>Domain: <strong>In-Memory Database Internals</strong></span>
         <span>•</span>
-        <span>Reference Architecture: <strong>SAP HANA TableStore</strong></span>
+        <span>Project: <strong>mini-columnar-engine</strong></span>
         <span>•</span>
         <span>Scan Performance: <strong>3.96 Billion elem/sec</strong></span>
       </div>
     </article>
 
     <div class="systems-callout">
-      <strong>Mechanical Sympathy in OLAP:</strong> Modern CPUs can retire 4 instructions per cycle and process 256 or 512 bits in a single SIMD vector operation. However, classical row-oriented database layouts waste over 85% of memory bus bandwidth loading irrelevant columns into CPU cache lines. This article details the implementation of contiguous columnar storage, bit-packed null bitmasks, and direct-indexed aggregations in Rust, mirroring the architecture of SAP HANA TableStore.
+      Contiguous columns, bit-packed null masks and direct-indexed aggregation in a Rust analytical prototype.
     </div>
 
     <section class="article-body">
@@ -84,12 +84,12 @@ struct OrderRecord {
       </p>
       <div class="code-block">SELECT SUM(price_cents) FROM orders WHERE timestamp &gt; 1700000000;</div>
       <p>
-        The CPU must load the entire 100-byte <code>OrderRecord</code> into cache lines merely to inspect the 8-byte <code>timestamp</code> and 8-byte <code>price_cents</code> fields. More than <strong>84% of every transferred cache line</strong> is immediately discarded.
+        The two fields account for only 16 bytes of each example record. A columnar layout can avoid reading unrelated fields during this query.
       </p>
 
       <h2>2. Columnar Memory Layout (Array of Structs vs. Struct of Arrays)</h2>
       <p>
-        In high-performance in-memory columnar stores (such as SAP HANA TableStore and our <code>mini-columnar-engine</code>), every column is decomposed into a dedicated, contiguous memory vector:
+        The prototype stores typed column values in contiguous buffers. The simplified layout below illustrates the separation of values and validity bits.
       </p>
 
       <div class="code-block">
@@ -101,7 +101,7 @@ pub struct ColumnChunk {
 }</div>
 
       <p>
-        For a column of <code>u64</code> integers, a single 64-byte cache line contains exactly eight sequential values. The hardware prefetcher recognizes linear sequential memory access patterns across adjacent cache lines with near-zero latency penalty, maximizing bandwidth utilization close to 100% of theoretical bus limits.
+        For a column of <code>u64</code> integers, a single 64-byte cache line contains exactly eight sequential values. Sequential access can help the hardware prefetcher bring in adjacent cache lines.
       </p>
 
       <h2>3. Bit-Packed Null Representation (0.125 Bytes/Row)</h2>
@@ -140,7 +140,7 @@ impl BitMask {
         Variable-length strings (such as product categories, country codes, or status flags) destroy memory alignment and prohibit SIMD vectorized operations.
       </p>
       <p>
-        In SAP HANA and <code>mini-columnar-engine</code>, all string columns undergo dictionary compression. A distinct dictionary vector stores unique strings, while the columnar data vector stores compact integer <em>surrogate IDs</em>:
+        Dictionary encoding is available for string columns in the prototype. A distinct dictionary vector stores unique strings, while the columnar data vector stores compact integer <em>surrogate IDs</em>:
       </p>
       <div class="code-block">
 Dictionary:
@@ -162,7 +162,7 @@ Column Vector (Surrogate IDs):
       <ul>
         <li>1024 rows of 8-byte integers = 8 KB (resides completely within 32 KB L1 data cache).</li>
         <li>Iterators produce <em>selection vectors</em> (arrays of active indices) rather than copying data buffers.</li>
-        <li>Compilers vectorize inner loops into AVX2 / AVX-512 SIMD instructions.</li>
+        <li>Fixed-size blocks can help the compiler vectorize inner loops. Instruction selection depends on the compiler and target.</li>
       </ul>
 
       <h2>6. Direct-Indexed Array Aggregation (Eliminating Hash Tables)</h2>
@@ -182,49 +182,19 @@ pub fn aggregate_sum_direct(surrogates: &amp;[u32], values: &amp;[i64], acc: &am
 }</div>
 
       <p>
-        In our Criterion benchmark suites, direct-indexed aggregation achieved a <strong>29.5x speedup</strong> over standard Rust <code>HashMap</code> aggregation, processing 10,000,000 grouped records in under 2.5 milliseconds.
+        Direct indexing is useful when group IDs are dense and already encoded. The example above omits validity checks. Grouped results in the prototype can omit null keys and groups where every value is null.
       </p>
 
       <h2>7. Verification &amp; Benchmark Results</h2>
-      <p>
-        Benchmarks executed on AMD EPYC 7763 using Criterion.rs (source available in <code>mini-columnar-engine/benches</code>):
-      </p>
-
+      <p>Archived Criterion estimates on Apple Silicon used one million values for scan plus sum and one million rows with eight repeating keys for grouping. Dictionary construction was outside the timed grouping comparison.</p>
       <div class="table-wrapper">
         <table class="data-table">
-          <thead>
-            <tr>
-              <th>Operation</th>
-              <th>Data Volume</th>
-              <th class="num">Throughput</th>
-              <th class="num">Execution Time</th>
-            </tr>
-          </thead>
+          <thead><tr><th scope="col">Operation</th><th scope="col" class="num">Archived estimate</th></tr></thead>
           <tbody>
-            <tr class="highlight-row">
-              <td>Contiguous SIMD Column Scan</td>
-              <td>10,000,000 rows (i64)</td>
-              <td class="num">3.96 Billion elem/s</td>
-              <td class="num">2.52 ms</td>
-            </tr>
-            <tr>
-              <td>Dictionary Encoded Filter</td>
-              <td>10,000,000 rows (u16)</td>
-              <td class="num">4.12 Billion elem/s</td>
-              <td class="num">2.42 ms</td>
-            </tr>
-            <tr class="highlight-row">
-              <td>Direct-Indexed Group By</td>
-              <td>10,000,000 rows</td>
-              <td class="num">29.5x vs. HashMap</td>
-              <td class="num">2.48 ms</td>
-            </tr>
-            <tr class="bad-row">
-              <td>Standard HashMap Group By</td>
-              <td>10,000,000 rows</td>
-              <td class="num">Baseline (1x)</td>
-              <td class="num">73.16 ms</td>
-            </tr>
+            <tr><td>Contiguous i64 scan + sum</td><td class="num">0.253 ms (~3.96B elements/s)</td></tr>
+            <tr><td>Direct-indexed grouping</td><td class="num">1.025 ms</td></tr>
+            <tr><td>Owned-string HashMap grouping</td><td class="num">16.806 ms</td></tr>
+            <tr><td>Borrowed-string HashMap grouping</td><td class="num">30.223 ms</td></tr>
           </tbody>
         </table>
       </div>

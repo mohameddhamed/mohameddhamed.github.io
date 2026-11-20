@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M.Sc. Dissertation &amp; Loom Research — *mohamed.sys</title>
-  <meta name="description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <meta name="description" content="ELTE MSc thesis research on virtual threads in Spring Boot, with methodology, results and benchmark evidence.">
   <meta name="author" content="Mohamed Hamed">
   <meta property="og:title" content="M.Sc. Dissertation &amp; Loom Research — *mohamed.sys">
-  <meta property="og:description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <meta property="og:description" content="ELTE MSc thesis research on virtual threads in Spring Boot, with methodology, results and benchmark evidence.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mohameddhamed.github.io/thesis/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="M.Sc. Dissertation &amp; Loom Research — *mohamed.sys">
-  <meta name="twitter:description" content="Academic dissertation anchor and 125-trial empirical benchmark dataset evaluating Java 21 Project Loom virtual threads, carrier starvation, and monitor pinning in Spring Boot applications.">
+  <meta name="twitter:description" content="ELTE MSc thesis research on virtual threads in Spring Boot, with methodology, results and benchmark evidence.">
   <link rel="canonical" href="https://mohameddhamed.github.io/thesis/">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
@@ -46,112 +46,67 @@
         MASTER'S THESIS RESEARCH MONOGRAPH • ELTE COMPUTER SCIENCE (SOFTWARE ARCHITECTURE)
       </div>
       <h1 class="article-title">
-        Java Virtual Threads in Spring Boot Applications: Empirical Benchmarks on Throughput, Carrier Starvation, and Monitor Pinning Mitigation
+        Migrating Spring Boot MVC Systems to Java 21 Virtual Threads: Architecture, Risks, and Engineering Guidelines
       </h1>
       <div class="article-meta">
         <span>Author: <strong>Mohamed Hamed</strong></span>
         <span>•</span>
         <span>Institution: <strong>Eötvös Loránd University (ELTE)</strong></span>
         <span>•</span>
-        <span>Defense: <strong>2026/2027</strong></span>
-        <span>•</span>
-        <span>Status: <strong>Research Complete (125 Trials)</strong></span>
+        <span>Degree: <strong>M.Sc. in progress</strong></span>
       </div>
     </article>
 
     <div class="systems-callout">
-      <strong>Monograph Synopsis:</strong> This dissertation investigates the runtime mechanics, failure modes, and mitigation patterns of Java 21 Project Loom (JEP 444) Virtual Threads under high-concurrency enterprise workloads. Across 125 reproducible empirical trials on bare-metal Linux hardware, we uncover how unmonitored migration of legacy Spring Boot MVC services introduces catastrophic carrier thread pinning, and demonstrate how lock replacement restores a <strong>261x throughput advantage</strong> with sub-2ms P99 latencies.
+      This thesis uses controlled Spring Boot workloads to separate carrier pinning from application-level contention. The documented benchmark environment is an Apple M1 with 8 GB of memory running macOS (arm64). Run manifests record the runtime and tool versions for each workload.
     </div>
 
     <section class="article-body">
-      <h2>1. The Core Architectural Problem</h2>
+      <h2>1. Java 21 lock comparison</h2>
       <p>
-        Java Virtual Threads decouple logical application tasks from Operating System kernel threads. While platform threads incur ~1MB native stack memory footprints, virtual threads operate as user-mode continuations managed cooperatively by a small <code>ForkJoinPool</code> carrier pool (typically matching the physical core count <code>N<sub>CPU</sub></code>).
-      </p>
-      <p>
-        However, the JVM runtime cannot unmount a virtual thread when blocking I/O occurs within a <code>synchronized</code> block or across a native JNI/FFM boundary (JFR event: <code>jdk.VirtualThreadPinned</code>). When legacy JDBC drivers or enterprise connection pools synchronize around socket read/write calls under heavy load, all carrier threads become pinned simultaneously. At this saturation threshold, the entire thread pool deadlocks, yielding extreme throughput collapse and multi-second latency degradation.
-      </p>
-
-      <h2>2. 125-Trial Empirical Summary Dataset</h2>
-      <p>
-        The following dataset represents aggregated metrics across 125 reproducible test iterations executed in a dedicated bare-metal Linux environment (AMD EPYC 7763 64-Core, 128 Threads, 256GB RAM, OpenJDK 21.0.5 LTS).
+        On October 15, 2026, six runs compared <code>synchronized</code> with <code>ReentrantLock</code> on the synthetic <code>/payments</code> endpoint, with three runs per treatment. Java 21.0.8 ran with one carrier and 10 closed-loop k6 virtual users. Both locks protected the same 500 ms operation.
       </p>
 
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Architecture Pattern</th>
-              <th>Concurrency</th>
-              <th class="num">Throughput</th>
-              <th class="num">P99 Latency</th>
-              <th class="num">JFR Pinning</th>
-              <th class="num">Avg Heap</th>
+              <th scope="col">Lock</th>
+              <th scope="col" class="num">Steady throughput</th>
+              <th scope="col" class="num">Mean steady p50</th>
+              <th scope="col" class="num">JFR pin events per run</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Platform Threads (Tomcat 200 Pool)</td>
-              <td>1,000</td>
-              <td class="num">2,840 req/s</td>
-              <td class="num">420.0 ms</td>
-              <td class="num">0</td>
-              <td class="num">210 MB</td>
-            </tr>
-            <tr class="bad-row">
-              <td>Virtual Threads (Legacy Synchronized)</td>
-              <td>10,000</td>
-              <td class="num">184 req/s</td>
-              <td class="num">1,420.0 ms</td>
-              <td class="num">4,812 / min</td>
-              <td class="num">68 MB</td>
-            </tr>
-            <tr class="highlight-row">
-              <td>Virtual Threads (Patched ReentrantLock)</td>
-              <td>10,000</td>
-              <td class="num">48,210 req/s</td>
-              <td class="num">1.82 ms</td>
-              <td class="num">0</td>
-              <td class="num">34 MB</td>
+              <td><code>synchronized</code></td>
+              <td class="num">1.967 req/s</td>
+              <td class="num">4,966.8 ms</td>
+              <td class="num">108</td>
             </tr>
             <tr>
-              <td>Virtual Threads (Extreme Concurrency)</td>
-              <td>50,000</td>
-              <td class="num">52,400 req/s</td>
-              <td class="num">2.45 ms</td>
+              <td><code>ReentrantLock</code></td>
+              <td class="num">1.956 req/s</td>
+              <td class="num">4,982.0 ms</td>
               <td class="num">0</td>
-              <td class="num">82 MB</td>
-            </tr>
-            <tr>
-              <td>Virtual Threads + Semaphore Pooling</td>
-              <td>25,000</td>
-              <td class="num">46,800 req/s</td>
-              <td class="num">1.94 ms</td>
-              <td class="num">0</td>
-              <td class="num">48 MB</td>
             </tr>
           </tbody>
         </table>
       </div>
+      <p>Changing the lock freed the carrier during blocking in this workload. The shared lock still serialized requests, leaving a capacity bound near 2 req/s.</p>
 
-      <h2>3. Key Empirical Findings</h2>
+      <h2>2. Evidence by experimental stratum</h2>
+      <p>The repository census covers 125 physical executions across eight strata. The normalized evidence explorer has 76 records. The census also includes 27 exploratory runs and 13 excluded or construct-flawed runs. A separate schema template is metadata.</p>
       <ul>
-        <li><strong>Pinning Latency Cliff:</strong> When 8/8 carrier threads become pinned by blocking JDBC socket reads, P99 request latency degrades by 780x (jumping from 1.82ms to 1,420ms).</li>
-        <li><strong>Lock Replacement Remediation:</strong> Replacing legacy <code>synchronized</code> blocks with <code>java.util.concurrent.locks.ReentrantLock</code> completely eliminates <code>jdk.VirtualThreadPinned</code> events without modifying business logic.</li>
-        <li><strong>Memory Efficiency:</strong> 10,000 unpinned Virtual Threads consume only 34MB resident heap memory, compared to 210MB required for 1,000 OS platform threads.</li>
-        <li><strong>ThreadLocal Deprecation:</strong> Deep ThreadLocal inheritance under Loom creates severe heap retention leaks; migrating to Java 21 <code>ScopedValue</code> reduces memory footprint by 62%.</li>
+        <li><strong>Java 21 synchronization (stratum 1).</strong> The 12-run matrix includes the six lock-treatment runs above and platform-thread and no-lock controls. The no-lock control drops the mutual-exclusion invariant.</li>
+        <li><strong>Runtime evolution (stratum 2).</strong> In the six Java 24 lock-comparison runs, both treatments averaged 1.967 req/s with zero recorded monitor pins.</li>
+        <li><strong>Native boundaries and endpoint controls (strata 3 and 4).</strong> Separate JNI and endpoint diagnostics test native carrier capture and other sources of contention.</li>
+        <li><strong>Historical baseline (stratum 5).</strong> The October 8 eight-carrier baseline is a distinct run set. It recorded 110 pins per synchronized run.</li>
+        <li><strong>Persistence ablation (stratum 8).</strong> In six Java 21 runs with 50 virtual users, embedded H2 and a 300 ms connection hold, pool sizes 1 and 10 yielded 3.27 and 32.60 steady req/s respectively, with zero recorded pins in both treatments.</li>
       </ul>
 
-      <h2>4. Academic Citation &amp; Artifact Access</h2>
-      <div class="code-block">@mastersthesis{hamed2026virtualthreads,
-  author       = {Mohamed Hamed},
-  title        = {Java Virtual Threads in Spring Boot Applications: Empirical Benchmarks on Throughput, Carrier Starvation, and Monitor Pinning Mitigation},
-  school       = {E{\"o}tv{\"o}s Lor{\'a}nd University (ELTE), Faculty of Informatics},
-  year         = {2026},
-  address      = {Budapest, Hungary},
-  month        = {November},
-  type         = {Master's Thesis}
-}</div>
+      <h2>3. Thesis and research artifacts</h2>
+      <p>The full repository thesis is available below. The appendix and run manifests identify the evidence for each result.</p>
 
       <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px;">
         <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link" style="color: var(--accent); font-weight: 600;">
@@ -163,6 +118,9 @@
         <a href="https://github.com/mohameddhamed/virtual-thread-springs" target="_blank" rel="noopener" class="term-link">
           Inspect Benchmark Codebase on GitHub ›
         </a>
+        <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/04-methodology.tex">Methodology ›</a>
+        <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/06-results.tex">Results chapter ›</a>
+        <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/src/main/resources/static/data/normalized-evidence.json">Normalized evidence (JSON) ›</a>
       </div>
     </section>
   </main>

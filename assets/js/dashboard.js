@@ -8,36 +8,35 @@
   if (!container) return;
 
   const dataset = {
-    io: {
-      title: "Workload A: Database & Socket I/O (10,000 Concurrent Clients)",
-      description: "Comparing Tomcat Platform Threads, Pinned Virtual Threads (synchronized JDBC), and Patched Virtual Threads (ReentrantLock).",
-      categories: ["Platform (Tomcat)", "Virtual (Pinned)", "Virtual (Patched)"],
-      throughput: [2840, 184, 48210], // req/s
-      p99: [420.0, 1420.0, 1.82],     // ms
-      pinnedEvents: [0, 4812, 0],     // events
-      units: { throughput: "req/s", p99: "ms", pinnedEvents: "events" }
+    java21: {
+      title: "Stratum 1 · Java 21.0.8 lock comparison",
+      description: "October 15, 2026 · 10 virtual users · One carrier · 500 ms payment operation",
+      categories: ["synchronized", "ReentrantLock"],
+      throughput: [1.967, 1.956],
+      p50: [4966.8, 4982.0],
+      pinnedEvents: [108, 0]
     },
-    mixed: {
-      title: "Workload B: Mixed CPU / IO Pipeline (25,000 Concurrent Clients)",
-      description: "JSON parsing + HTTP microservice fanout across 8 carrier threads.",
-      categories: ["Platform (500 Pool)", "Virtual (Pinned)", "Virtual (Patched)"],
-      throughput: [3120, 410, 41800],
-      p99: [380.0, 960.0, 3.45],
-      pinnedEvents: [0, 3120, 0],
-      units: { throughput: "req/s", p99: "ms", pinnedEvents: "events" }
+    java24: {
+      title: "Stratum 2 · Java 24.0.2 lock comparison",
+      description: "October 15, 2026 · 10 virtual users · One carrier · 500 ms payment operation",
+      categories: ["synchronized", "ReentrantLock"],
+      throughput: [1.967, 1.967],
+      p50: [4944.67, 4952.60],
+      pinnedEvents: [0, 0]
     },
-    carriers: {
-      title: "Workload C: Carrier Scaling & Parallelism (1 to 16 Carriers)",
-      description: "Throughput scaling under unpinned ForkJoinPool scheduler across core counts.",
-      categories: ["1 Carrier", "2 Carriers", "4 Carriers", "8 Carriers", "16 Carriers"],
-      throughput: [7100, 14200, 26900, 48210, 52400],
-      p99: [12.4, 6.8, 3.1, 1.82, 1.74],
-      pinnedEvents: [0, 0, 0, 0, 0],
-      units: { throughput: "req/s", p99: "ms", pinnedEvents: "events" }
+    persistence: {
+      title: "Stratum 8 · Java 21.0.12.1 connection-held ablation",
+      description: "November 10, 2026 · 50 virtual users · 300 ms connection hold",
+      categories: ["Pool size 1", "Pool size 10"],
+      throughput: [3.27, 32.60],
+      p50: [15123.0, 1431.3],
+      pinnedEvents: [0, 0]
     }
   };
 
-  let activeWorkload = "io";
+  const units = { throughput: "req/s", p50: "ms", pinnedEvents: "events per run" };
+
+  let activeWorkload = "java21";
   let activeMetric = "throughput";
 
   function renderChart() {
@@ -62,25 +61,17 @@
       const x = padding.left + (idx * gap) + (gap - barWidth) / 2;
       const y = padding.top + chartH - h;
 
-      let color = "#f5c542"; // default amber
-      if (activeMetric === "throughput") {
-        color = val === Math.max(...values) ? "#6bd98a" : (val < 1000 ? "#ff6b6b" : "#f5c542");
-      } else if (activeMetric === "p99") {
-        color = val === Math.min(...values) ? "#6bd98a" : (val > 500 ? "#ff6b6b" : "#f5c542");
-      } else if (activeMetric === "pinnedEvents") {
-        color = val > 0 ? "#ff6b6b" : "#6bd98a";
-      }
-
-      const formattedVal = val.toLocaleString() + " " + data.units[activeMetric];
+      const color = activeMetric === "pinnedEvents" && val > 0 ? "#ff6b6b" : "#f5c542";
+      const formattedVal = val.toLocaleString(undefined, { maximumFractionDigits: 3 });
 
       barsSvg += `
-        <g class="chart-bar-group" tabindex="0" role="graphics-symbol" aria-label="${data.categories[idx]}: ${formattedVal}">
+        <g class="chart-bar-group" tabindex="0" role="graphics-symbol" aria-label="${data.categories[idx]}: ${formattedVal} ${units[activeMetric]}">
           <rect x="${x}" y="${y}" width="${barWidth}" height="${h}" fill="${color}" rx="3" opacity="0.9">
-            <title>${data.categories[idx]}: ${formattedVal}</title>
+            <title>${data.categories[idx]}: ${formattedVal} ${units[activeMetric]}</title>
           </rect>
           <!-- Value Label on Top of Bar -->
           <text x="${x + barWidth / 2}" y="${y - 8}" fill="${color}" font-family="var(--font-mono)" font-size="11" font-weight="600" text-anchor="middle">
-            ${val.toLocaleString()}
+            ${formattedVal}
           </text>
           <!-- Category Label under X-Axis -->
           <text x="${x + barWidth / 2}" y="${padding.top + chartH + 24}" fill="#8a9099" font-family="var(--font-mono)" font-size="11" text-anchor="middle">
@@ -120,8 +111,8 @@
         ${barsSvg}
       </svg>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--muted);">
-        <span>Unit: <strong>${data.units[activeMetric]}</strong></span>
-        <span>Environment: <strong>Bare Metal EPYC 7763 (Ubuntu 22.04 LTS, JDK 21.0.5)</strong></span>
+        <span>Unit: <strong>${units[activeMetric]}</strong></span>
+        <span>Environment: <strong>Apple M1 · 8 GB · macOS</strong></span>
       </div>
     `;
   }

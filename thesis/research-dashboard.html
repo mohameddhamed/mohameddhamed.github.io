@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JFR Telemetry Research Dashboard — *mohamed.sys</title>
-  <meta name="description" content="Interactive SVG telemetry dashboard displaying empirical data from 125 benchmark trials evaluating Java 21 Project Loom virtual threads, throughput, and carrier thread pinning.">
+  <meta name="description" content="Compare selected Spring Boot virtual-thread experiments with separate Java 21, Java 24 and database pool results.">
   <meta name="author" content="Mohamed Hamed">
   <meta property="og:title" content="JFR Telemetry Research Dashboard — *mohamed.sys">
-  <meta property="og:description" content="Interactive SVG telemetry dashboard displaying empirical data from 125 benchmark trials evaluating Java 21 Project Loom virtual threads, throughput, and carrier thread pinning.">
+  <meta property="og:description" content="Compare selected Spring Boot virtual-thread experiments with separate Java 21, Java 24 and database pool results.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mohameddhamed.github.io/thesis/research-dashboard.html">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="JFR Telemetry Research Dashboard — *mohamed.sys">
-  <meta name="twitter:description" content="Interactive SVG telemetry dashboard displaying empirical data from 125 benchmark trials evaluating Java 21 Project Loom virtual threads, throughput, and carrier thread pinning.">
+  <meta name="twitter:description" content="Compare selected Spring Boot virtual-thread experiments with separate Java 21, Java 24 and database pool results.">
   <link rel="canonical" href="https://mohameddhamed.github.io/thesis/research-dashboard.html">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="*mohamed.sys RSS Feed" href="../feed.xml">
@@ -42,22 +42,22 @@
   <main>
     <article class="article-header">
       <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-bottom: 6px;">
-        INTERACTIVE DATA EXPLORER • 125 STANDARDIZED EMPIRICAL TRIALS
+        INTERACTIVE DATA EXPLORER • SELECTED THESIS COMPARISONS
       </div>
       <h1 class="article-title">
         Project Loom Concurrency &amp; JFR Telemetry Dashboard
       </h1>
       <div class="article-meta">
-        <span>Hardware: <strong>AMD EPYC 7763 64-Core (128 Threads)</strong></span>
+        <span>Hardware: <strong>Apple M1, 8 GB</strong></span>
         <span>•</span>
-        <span>Runtime: <strong>OpenJDK 21.0.5 LTS</strong></span>
+        <span>Runtime: <strong>Java 21 and Java 24</strong></span>
         <span>•</span>
-        <span>OS: <strong>Ubuntu 22.04 LTS (Kernel 5.15)</strong></span>
+        <span>OS: <strong>macOS (arm64)</strong></span>
       </div>
     </article>
 
     <div class="systems-callout">
-      <strong>Telemetry Dashboard Instructions:</strong> Toggle between workload architectures and metrics below to observe empirical behavior across 125 benchmark trials. Notice how carrier pinning inside synchronized blocks reduces throughput by 99.6%, and how lock replacement restores full unpinned fiber scaling.
+      <strong>Telemetry Dashboard Instructions:</strong> Select a run set and a metric. Each comparison shows three runs per treatment. Throughput and p50 refer to the steady window. Pin counts are per run.
     </div>
 
     <!-- Dashboard Container with Filters and SVG Mount -->
@@ -65,21 +65,21 @@
       
       <!-- Workload Selector -->
       <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">
-        1. Select Workload Profile:
+        Select a run set
       </div>
       <div class="filter-bar">
-        <button class="filter-btn active" data-workload="io">Workload A: Database &amp; Socket I/O (10k Concurrency)</button>
-        <button class="filter-btn" data-workload="mixed">Workload B: Mixed CPU / I/O Pipeline (25k Concurrency)</button>
-        <button class="filter-btn" data-workload="carriers">Workload C: Carrier Scaling (1 to 16 Carriers)</button>
+        <button class="filter-btn active" data-workload="java21">Java 21 locks</button>
+        <button class="filter-btn" data-workload="java24">Java 24 locks</button>
+        <button class="filter-btn" data-workload="persistence">HikariCP pool sizes</button>
       </div>
 
       <!-- Metric Selector -->
       <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">
-        2. Select Measurement Metric:
+        Select a metric
       </div>
       <div class="filter-bar">
         <button class="filter-btn active" data-metric="throughput">Throughput (req/s) &uarr;</button>
-        <button class="filter-btn" data-metric="p99">P99 Latency (ms) &darr;</button>
+        <button class="filter-btn" data-metric="p50">P50 Latency (ms) &darr;</button>
         <button class="filter-btn" data-metric="pinnedEvents">JFR Pinning Events &darr;</button>
       </div>
 
@@ -93,22 +93,15 @@
     <!-- Experimental Rigor Breakdown -->
     <section class="article-body">
       <h2>Experimental Rig &amp; Verification Methodology</h2>
-      <p>
-        To ensure scientific repeatability, each trial was executed with automated JVM warm-up phases (120 seconds of sustained load) prior to measurement. Telemetry was collected via JDK Flight Recorder (JFR) using customized event configurations:
-      </p>
-      <ul>
-        <li><code>jdk.VirtualThreadPinned</code>: Threshold set to <code>0 ms</code> to capture every carrier thread pinning event.</li>
-        <li><code>jdk.VirtualThreadSubmitFailed</code>: Monitored to detect ForkJoinPool queue overflow and worker rejection.</li>
-        <li><code>jdk.CPULoad</code>: Captured at 100ms intervals to evaluate OS scheduler context switching vs. user-mode fiber scheduling.</li>
-        <li>Load generation: Distributed Locust and JMeter runner nodes operating on an isolated 10 GbE local backplane.</li>
-      </ul>
+      <p>The lock comparisons use a synthetic 500 ms payment operation and 10 closed-loop k6 virtual users with one carrier. The connection-held ablation uses a separate 300 ms hold, embedded H2 and 50 virtual users. JFR records qualifying pin events. On the Java 21 lock runs, the threshold was 20 ms.</p>
+      <p>See the <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/04-methodology.tex">methodology and census</a>, <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/overleaf/chapters/06-results.tex">results tables</a>, and <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/docs/evidence-freeze/metric-recalculations.csv">run-level lock metrics</a>. The <a href="https://github.com/mohameddhamed/virtual-thread-springs/blob/4827c0ce38c8d47b416012d9f0390dc48c22ab3b/scripts/analyze_persistence_results.py">persistence analysis script</a> calculates the connection pool figures from k6 order-duration points.</p>
 
       <div style="display: flex; gap: 16px; margin-top: 24px;">
         <a href="index.html" class="term-link" style="color: var(--accent); font-weight: 600;">
           &larr; Return to Thesis Overview &amp; Data Tables
         </a>
         <a href="../assets/pdf/thesis-mohamed-hamed.pdf" target="_blank" class="term-link" style="color: var(--accent); font-weight: 600;">
-          Download Complete Dissertation Monograph (PDF) ›
+          Download Full Thesis (PDF) ›
         </a>
       </div>
     </section>
